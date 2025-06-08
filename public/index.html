@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego de Elecciones Multijugador</title>
+    <title>Juego de Elecciones: Aventura Grupal</title>
     <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div id="game-container">
@@ -14,46 +15,44 @@
             <h2>Crea tu Personaje</h2>
             <label for="playerName">Nombre:</label>
             <input type="text" id="playerName" maxlength="20" placeholder="Tu nombre de aventurero" required>
-
             <label for="playerClass">Clase:</label>
             <select id="playerClass" required>
                 <option value="">Selecciona una clase</option>
                 <option value="Guerrero">Guerrero</option>
                 <option value="Mago">Mago</option>
                 <option value="Explorador">Explorador</option>
-                <option value="Pícaro">Pícaro</option>
             </select>
-
             <label for="playerBackground">Trasfondo:</label>
             <select id="playerBackground" required>
                 <option value="">Selecciona un trasfondo</option>
-                <option value="Noble">Noble (Linaje antiguo)</option>
-                <option value="Plebeyo">Plebeyo (De origen humilde)</option>
-                <option value="Erudito">Erudito (Estudioso de lo arcano)</option>
-                <option value="Soldado">Soldado (Entrenado en combate)</option>
+                <option value="Noble">Noble</option>
+                <option value="Campesino">Campesino</option>
+                <option value="Misterioso">Misterioso</option>
             </select>
             <button id="createCharacterBtn">Comenzar Aventura</button>
-            <p id="creationMessage" class="message"></p>
         </div>
 
         <div id="game-screen" class="screen">
-            <div id="player-list-container">
-                <h3>Jugadores Conectados:</h3>
-                <ul id="connectedPlayers">
+            <div id="players-list-container">
+                <h2>Jugadores Conectados</h2>
+                <ul id="playersList">
                     </ul>
-                <div id="vote-counts">
-                    </div>
             </div>
-            <div id="story-display">
-                <p id="currentStory"></p>
+
+            <div id="story-area">
+                <p id="storyText">Cargando historia...</p>
                 <div id="choices-container">
                     </div>
-                <p id="vote-message" class="message"></p>
+                <div id="voting-status"></div>
+            </div>
+
+            <div id="chat-container">
+                <h2>Chat de la Sala</h2>
+                <div id="messages"></div>
+                <input id="m" autocomplete="off" placeholder="Escribe tu mensaje..." /><button id="send-chat">Enviar</button>
             </div>
         </div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="game.js"></script>
-</body>
+    <script src="game.js"></script> </body>
 </html>

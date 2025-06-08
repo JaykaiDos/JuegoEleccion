@@ -165,6 +165,17 @@ io.on('connection', (socket) => {
         }
     });
 
+    // --- Manejo de eventos del chat ---
+    socket.on('chat message', (msg) => {
+        // Obtenemos el nombre del jugador si ya lo ha configurado, o usamos un ID por defecto
+        const senderName = game.players[socket.id] ? game.players[socket.id].name : `Usuario ${socket.id.substring(0, 4)}`;
+        const fullMessage = `[${senderName}]: ${msg}`; // Mensaje con nombre del remitente
+        console.log(`Mensaje de chat de ${senderName}: ${msg}`);
+        // Retransmitir el mensaje a todos los clientes conectados
+        io.emit('chat message', fullMessage);
+    });
+    // --- Fin Manejo de eventos del chat ---
+
     // Evento cuando un jugador se desconecta
     socket.on('disconnect', () => {
         console.log(`Un usuario se ha desconectado: ${socket.id}`);
