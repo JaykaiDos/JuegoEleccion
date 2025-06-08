@@ -1,199 +1,248 @@
+// public/game.js
+
 const socket = io();
 
-// --- Elementos del DOM del Juego ---
-const characterCreationScreen = document.getElementById('character-creation');
-const gameScreen = document.getElementById('game-screen');
-const playerNameInput = document.getElementById('playerName');
-const playerClassSelect = document.getElementById('playerClass');
-const playerBackgroundSelect = document.getElementById('playerBackground');
-const createCharacterBtn = document.getElementById('createCharacterBtn');
-const playersList = document.getElementById('playersList');
-const storyText = document.getElementById('storyText');
-const choicesContainer = document.getElementById('choices-container');
-const votingStatus = document.getElementById('voting-status'); // Para mostrar el estado de la votación
+// --- Elementos del DOM ---
+const startScreen = document.getElementById('start-screen');
+const mode1v1Button = document.getElementById('mode-1v1');
+const mode2v2Button = document.getElementById('mode-2v2');
+const queue1v1Count = document.getElementById('queue-1v1-count');
+const queue2v2Count = document.getElementById('queue-2v2-count');
 
-// --- Elementos del DOM del Chat ---
-const messagesContainer = document.getElementById('messages'); // Contenedor de mensajes
-const chatInput = document.getElementById('m');             // Input para escribir mensaje
-const sendChatButton = document.getElementById('send-chat'); // Botón de enviar chat
+const characterSelectionScreen = document.getElementById('character-selection-screen');
+const charactersContainer = document.getElementById('characters-container');
+const confirmCharacterSelectionButton = document.getElementById('confirm-character-selection');
 
-let hasVotedInCurrentRound = false; // Bandera para controlar el voto del cliente
+// Elementos del DOM para la pantalla de ingreso de nombre (NUEVO)
+const nameInputScreen = document.getElementById('name-input-screen');
+const selectedCharacterDisplay = document.getElementById('selected-character-display');
+const playerNameInput = document.getElementById('player-name-input');
+const confirmNameButton = document.getElementById('confirm-name-button');
 
-// --- Lógica de Creación de Personaje ---
-createCharacterBtn.addEventListener('click', () => {
-    const name = playerNameInput.value.trim();
-    const playerClass = playerClassSelect.value;
-    const background = playerBackgroundSelect.value;
+const waitingRoomScreen = document.getElementById('waiting-room-screen');
+const waitingRoomModeSpan = document.getElementById('waiting-room-mode');
+const waitingPlayersList = document.getElementById('waiting-players-list');
 
-    if (name && playerClass && background) {
-        socket.emit('createCharacter', { name, class: playerClass, background });
-    } else {
-        alert('Por favor, completa todos los campos para crear tu personaje.');
-    }
-});
+const combatScreen = document.getElementById('combat-screen');
+const myCharacterNameDisplay = document.getElementById('my-character-name');
+const myCharacterHpDisplay = document.getElementById('my-character-hp');
+const combatLog = document.getElementById('combat-log');
+const actionButtons = document.getElementById('action-buttons');
 
-socket.on('characterCreated', (success) => {
-    if (success) {
-        characterCreationScreen.classList.remove('active');
-        gameScreen.classList.add('active');
-        // Solicitar el estado actual de la historia y lista de jugadores al unirse
-        socket.emit('requestCurrentStory');
-        socket.emit('requestPlayers');
-    } else {
-        alert('Hubo un error al crear tu personaje. Intenta de nuevo.');
-    }
-});
+const chatContainer = document.getElementById('chat-container');
+const messages = document.getElementById('messages');
+const chatForm = document.getElementById('chat-form');
+const messageInput = document.getElementById('m');
 
-// --- Lógica de la Lista de Jugadores ---
-socket.on('updatePlayerList', (players) => {
-    playersList.innerHTML = ''; // Limpiar la lista existente
-    players.forEach(player => {
-        const li = document.createElement('li');
-        li.textContent = `${player.name} (${player.class}, ${player.background})`;
-        playersList.appendChild(li);
+const playerListContainer = document.getElementById('player-list-container');
+const playerList = document.getElementById('player-list');
+
+
+let selectedCharacterId = null;
+let myPlayerInfo = null; // Almacenará la información de nuestro propio jugador (incluido el nombre)
+
+// --- Funciones de Utilidad ---
+function showScreen(screenElement) {
+    const screens = [
+        startScreen,
+        characterSelectionScreen,
+        nameInputScreen, // ¡Añadida!
+        waitingRoomScreen,
+        combatScreen
+    ]; // Sólo las pantallas principales de flujo
+
+    screens.forEach(screen => {
+        if (screen.classList.contains('game-section')) {
+            screen.classList.add('hidden');
+        }
     });
-});
 
-socket.on('playerJoined', (player) => {
-    console.log(`Jugador ${player.name} se ha unido.`);
-    // La lista se actualizará con 'updatePlayerList' que se emite a todos.
-});
+    screenElement.classList.remove('hidden');
 
-socket.on('playerLeft', (playerId) => {
-    console.log(`Jugador con ID ${playerId} ha dejado la partida.`);
-    // La lista se actualizará con 'updatePlayerList' que se emite a todos.
-});
+    // Mantenemos el chat y la lista de jugadores siempre visibles
+    playerListContainer.classList.remove('hidden');
+    chatContainer.classList.remove('hidden');
+}
 
-// --- Lógica del Juego (Historia y Votación) ---
-socket.on('gameState', (data) => {
-    updateStoryDisplay(data.story);
-    if (data.story.choices.length > 0 && data.votingActive) {
-        startVotingDisplay();
-    } else if (data.story.choices.length === 0) {
-        endGameDisplay(data.story.text);
-    }
-});
-
-socket.on('storyUpdate', (storyNode) => {
-    updateStoryDisplay(storyNode);
-    if (storyNode.choices.length > 0) {
-        startVotingDisplay();
+// Función para habilitar/deshabilitar botón con estilos
+function setButtonEnabled(button, isEnabled) {
+    button.disabled = !isEnabled;
+    if (isEnabled) {
+        button.classList.remove('disabled-button');
     } else {
-        endGameDisplay(storyNode.text);
+        button.classList.add('disabled-button');
     }
+}
+
+// --- Eventos de Selección de Modo de Juego ---
+mode1v1Button.addEventListener('click', () => {
+    socket.emit('selectMode', '1v1');
+    showScreen(characterSelectionScreen);
 });
 
-socket.on('startVoting', () => {
-    startVotingDisplay();
+mode2v2Button.addEventListener('click', () => {
+    socket.emit('selectMode', '2v2');
+    showScreen(characterSelectionScreen);
 });
 
-socket.on('voteUpdate', (votes) => {
-    updateVoteCountsDisplay(votes);
-});
-
-socket.on('gameEnd', (message) => {
-    endGameDisplay(message);
-});
-
-function updateStoryDisplay(storyNode) {
-    storyText.textContent = storyNode.text;
-    choicesContainer.innerHTML = ''; // Limpiar opciones anteriores
-    storyNode.choices.forEach(choice => {
-        const button = document.createElement('button');
-        button.textContent = choice.text;
-        button.dataset.choiceId = choice.id; // Almacenar el ID de la elección
-        button.addEventListener('click', () => {
-            if (!hasVotedInCurrentRound) {
-                socket.emit('vote', choice.id);
-                hasVotedInCurrentRound = true;
-                disableChoicesButtons(); // Deshabilitar botones después de votar
-                votingStatus.textContent = '¡Gracias por tu voto! Esperando a los demás jugadores...';
-            }
+// --- Lógica de Selección de Personaje ---
+socket.on('charactersData', (characters) => { // Renombrado de 'characterList' a 'charactersData' para claridad
+    charactersContainer.innerHTML = '';
+    for (const charId in characters) {
+        const char = characters[charId];
+        const charCard = document.createElement('div');
+        charCard.classList.add('character-card');
+        charCard.dataset.characterId = char.id;
+        charCard.innerHTML = `
+            <h3>${char.name} (${char.race})</h3>
+            <p>Clase: ${char.class}</p>
+            <p>HP: ${char.initialHp}</p>
+            <p>Ataque: ${char.baseAttack}</p>
+            <h4>Habilidades:</h4>
+            <ul>
+                ${char.abilities.map(ability => `<li><strong>${ability.name}</strong>: ${ability.description}</li>`).join('')}
+            </ul>
+        `;
+        charCard.addEventListener('click', () => {
+            // Remover la selección de las otras tarjetas
+            document.querySelectorAll('.character-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            // Seleccionar esta tarjeta
+            charCard.classList.add('selected');
+            selectedCharacterId = char.id;
+            setButtonEnabled(confirmCharacterSelectionButton, true);
         });
-        choicesContainer.appendChild(button);
-    });
-    hasVotedInCurrentRound = false; // Resetear la bandera para la nueva historia
-    enableChoicesButtons(); // Asegurarse de que los botones estén activos para la nueva historia
-    votingStatus.textContent = ''; // Limpiar mensaje de estado de votación
-}
-
-function startVotingDisplay() {
-    // Si la votación está activa, aseguramos que los botones estén habilitados
-    if (choicesContainer.children.length > 0) {
-        enableChoicesButtons();
-        votingStatus.textContent = '¡La votación está abierta! Haz tu elección.';
-    }
-}
-
-function updateVoteCountsDisplay(votes) {
-    // Esto es más un log de consola por ahora. Puedes mejorar la UI si quieres.
-    console.log('Votos actuales:', votes);
-    // Puedes añadir lógica aquí para mostrar los votos en la interfaz si lo deseas,
-    // por ejemplo, debajo de cada botón de opción, o en una sección de "Votos Actuales"
-    let voteSummary = "Votos Actuales:\n";
-    const currentStoryNode = game.story[game.currentStoryIndex]; // OJO: 'game' no existe en el cliente.
-    // Necesitarías que el servidor te envíe el conteo específico por opción, no solo los votos brutos.
-    // Por ahora, solo muestra "X personas han votado"
-    voteSummary += `${Object.keys(votes).length} jugadores han votado.`;
-
-    // Si quieres mostrar por opción, el servidor debería enviar algo como:
-    // { "left": 5, "right": 3 }
-    // Aquí el servidor solo envía un objeto de votos de jugador a opción ID: { socketId1: "left", socketId2: "right" }
-    // Para mostrar conteo por opción, tendrías que procesar el objeto 'votes' aquí en el cliente
-    // o hacer que el servidor envíe el conteo ya agregado.
-
-    // Por simplicidad, por ahora solo mostraremos quién votó en la consola del cliente o un mensaje simple
-    // para el usuario que votó.
-}
-
-
-function disableChoicesButtons() {
-    Array.from(choicesContainer.children).forEach(button => {
-        button.disabled = true;
-    });
-}
-
-function enableChoicesButtons() {
-    Array.from(choicesContainer.children).forEach(button => {
-        button.disabled = false;
-    });
-}
-
-function endGameDisplay(message) {
-    storyText.textContent = message;
-    choicesContainer.innerHTML = '';
-    votingStatus.textContent = 'Fin del juego.';
-    disableChoicesButtons();
-}
-
-
-// --- Lógica del Chat ---
-
-// Evento para enviar mensaje al hacer clic en el botón
-sendChatButton.addEventListener('click', () => {
-    sendMessage();
-});
-
-// Evento para enviar mensaje al presionar Enter en el input del chat
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        sendMessage();
+        charactersContainer.appendChild(charCard);
     }
 });
 
-function sendMessage() {
-    const message = chatInput.value.trim(); // .trim() para quitar espacios al inicio/final
-    if (message) {
-        socket.emit('chat message', message); // Emitir el mensaje al servidor
-        chatInput.value = ''; // Limpiar el input después de enviar
+confirmCharacterSelectionButton.addEventListener('click', () => {
+    if (selectedCharacterId) {
+        socket.emit('characterSelected', selectedCharacterId); // Ahora este evento solo indica la selección del personaje
+        setButtonEnabled(confirmCharacterSelectionButton, false);
+        confirmCharacterSelectionButton.textContent = 'Seleccionado...';
     }
-}
+});
 
-// Escuchar los mensajes de chat que vienen del servidor
+// --- Lógica para la pantalla de ingreso de nombre (NUEVO) ---
+playerNameInput.addEventListener('input', () => {
+    // Habilitar botón si hay texto y no es solo espacios
+    if (playerNameInput.value.trim().length > 0) {
+        setButtonEnabled(confirmNameButton, true);
+    } else {
+        setButtonEnabled(confirmNameButton, false);
+    }
+});
+
+confirmNameButton.addEventListener('click', () => {
+    const playerName = playerNameInput.value.trim();
+    if (playerName) {
+        // Enviamos el nombre del jugador junto con el personaje seleccionado al servidor
+        socket.emit('playerReadyForMatchmaking', {
+            characterId: selectedCharacterId,
+            playerName: playerName
+        });
+        setButtonEnabled(confirmNameButton, false); // Deshabilitar para evitar múltiples envíos
+        confirmNameButton.textContent = 'Uniendo...';
+    }
+});
+
+// --- Eventos de Socket.IO ---
+
+// Actualiza el contador de jugadores en cola
+socket.on('queueUpdate', (counts) => {
+    queue1v1Count.textContent = counts['1v1'];
+    queue2v2Count.textContent = counts['2v2'];
+});
+
+// Cuando el servidor confirma la selección del personaje (para mostrar la pantalla de nombre)
+socket.on('characterSelected', (playerInfo) => { // playerInfo ahora solo tiene charData, socketId y mode
+    myPlayerInfo = playerInfo; // Guardamos la info temporal del personaje seleccionado
+    selectedCharacterDisplay.textContent = myPlayerInfo.characterData.name; // Mostrar el personaje seleccionado en la pantalla de nombre
+    showScreen(nameInputScreen); // Mostrar la pantalla de ingreso de nombre
+    playerNameInput.value = ''; // Limpiar input por si acaso
+    setButtonEnabled(confirmNameButton, false);
+    confirmNameButton.textContent = 'Entrar a la Sala';
+    console.log('Mi personaje seleccionado (temporal):', myPlayerInfo);
+});
+
+
+// Cuando el servidor envía a la sala de espera (después de ingresar el nombre y estar listo para matchmaking)
+socket.on('showWaitingRoom', (data) => { // 'data' ahora debería contener {mode, playerInfo (completo)}
+    waitingRoomModeSpan.textContent = data.mode;
+    // Si el chat tiene un título específico para el lobby, lo ajustaríamos aquí
+    chatContainer.querySelector('h2').textContent = `Chat de la Sala de Espera (${data.mode})`;
+    showScreen(waitingRoomScreen);
+
+    // Si ya tenemos el objeto completo de myPlayerInfo con el nombre, lo actualizamos
+    if (data.playerInfo) {
+        myPlayerInfo = data.playerInfo;
+        console.log('Mi información completa en sala de espera:', myPlayerInfo);
+    }
+});
+
+// Unirse a una sala específica de combate
+socket.on('joinedRoom', (data) => {
+    console.log(`Unido a la sala ${data.roomId} de tipo ${data.roomType}`);
+    // Actualizar myPlayerInfo con los datos completos de la sala
+    myPlayerInfo = data.players.find(p => p.socketId === socket.id);
+    showScreen(combatScreen); // Muestra la pantalla de combate
+    if (myPlayerInfo) { // Asegurarse de que myPlayerInfo esté disponible
+        myCharacterNameDisplay.textContent = myPlayerInfo.name; // Usar el nombre del jugador
+        myCharacterHpDisplay.textContent = `${myPlayerInfo.currentHp} / ${myPlayerInfo.maxHp}`;
+    }
+    chatContainer.querySelector('h2').textContent = `Chat de la Sala de Combate (${data.roomType})`;
+});
+
+// Actualizar la lista de jugadores dentro de la sala de combate
+socket.on('updateRoomPlayers', (players) => {
+    waitingPlayersList.innerHTML = '';
+    players.forEach(p => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${p.name} (${p.characterData.name}) - HP: ${p.currentHp}/${p.maxHp}`;
+        if (p.socketId === socket.id) {
+            listItem.style.fontWeight = 'bold'; // Resaltar a nuestro propio jugador
+        }
+        waitingPlayersList.appendChild(listItem);
+    });
+});
+
+// Actualizar la lista global de jugadores (lobby)
+socket.on('updatePlayerList', (players) => {
+    playerList.innerHTML = '';
+    if (players.length === 0) {
+        const listItem = document.createElement('li');
+        listItem.textContent = "No hay jugadores conectados en el lobby.";
+        playerList.appendChild(listItem);
+    } else {
+        players.forEach(player => {
+            const listItem = document.createElement('li');
+            listItem.textContent = player.name; // Usar el nombre directamente
+            playerList.appendChild(listItem);
+        });
+    }
+});
+
+// Manejo de mensajes de chat
+chatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (messageInput.value) {
+        socket.emit('chat message', messageInput.value);
+        messageInput.value = '';
+    }
+});
+
 socket.on('chat message', (msg) => {
-    const item = document.createElement('div');
-    item.textContent = msg; // El mensaje ya incluye el nombre del remitente
-    messagesContainer.appendChild(item);
-    // Opcional: Asegurarse de que el chat siempre haga scroll al último mensaje
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    const item = document.createElement('div'); // Cambiado a div para mayor flexibilidad
+    item.textContent = msg;
+    messages.appendChild(item);
+    messages.scrollTop = messages.scrollHeight;
+});
+
+
+// --- Gestión de Visibilidad de Pantallas al inicio ---
+document.addEventListener('DOMContentLoaded', () => {
+    showScreen(startScreen);
+    socket.emit('requestPlayerList'); // Solicita la lista de jugadores al conectar
 });

@@ -1,316 +1,472 @@
 /* public/style.css */
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #1a1a1a; /* Fondo casi negro */
-    color: #f0f0f0; /* Texto casi blanco */
+    font-family: 'Press Start 2P', cursive, Arial, sans-serif; /* Fuente retro si la tienes */
+    background-color: #1a1a1a;
+    color: #f0f0f0;
     margin: 0;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    min-height: 100vh; /* Asegura que ocupe al menos la altura de la ventana */
-    box-sizing: border-box; /* Incluye padding y border en el tamaño total */
+    justify-content: flex-start; /* Alinear arriba para permitir scroll */
+    min-height: 100vh;
+    box-sizing: border-box;
+    overflow-y: auto; /* Permitir scroll en el body si el contenido es largo */
 }
 
-h1, h2 {
-    color: #ffffff; /* Títulos en blanco puro */
+/* Importar una fuente retro si la deseas */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+
+h1, h2, h3, h4 {
+    color: #ffffff;
     text-align: center;
     margin-bottom: 20px;
+    text-shadow: 2px 2px #000000; /* Sombra para efecto retro */
 }
 
-/* Contenedores principales */
-#game-container,
-#chat-container,
-#player-list-container,
-#character-creation {
-    background-color: #333333; /* Fondo oscuro para los paneles */
-    border: 1px solid #666666; /* Borde gris oscuro */
+/* Contenedores principales de secciones */
+.game-section {
+    background-color: #333333;
+    border: 1px solid #666666;
     border-radius: 8px;
     padding: 25px;
     margin-bottom: 20px;
-    width: 90%; /* Ancho responsivo */
-    max-width: 600px; /* Ancho máximo para legibilidad */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Sombra sutil */
+    width: 90%;
+    max-width: 800px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    box-sizing: border-box; /* Incluir padding y border en el ancho total */
 }
 
-/* Estilos para el área de historia */
-#story-text {
-    font-size: 1.2em;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    text-align: center;
-    color: #e0e0e0; /* Texto de la historia un poco más claro */
+.hidden {
+    display: none !important;
 }
 
-/* Botones de elección */
-.choice-button {
-    background-color: #555555; /* Fondo de botón gris oscuro */
-    color: #ffffff; /* Texto de botón blanco */
-    border: 1px solid #888888;
-    padding: 12px 25px;
-    margin: 10px;
+/* Botones Generales */
+button {
+    background-color: #8A2BE2; /* Azul violeta */
+    color: white;
+    padding: 10px 20px;
+    border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1em;
+    font-family: 'Press Start 2P', cursive, Arial, sans-serif;
+    font-size: 0.9em;
+    margin: 5px;
     transition: background-color 0.3s ease, transform 0.1s ease;
-    width: calc(100% - 20px); /* Ocupa casi todo el ancho del contenedor */
-    max-width: 400px; /* Ancho máximo para botones */
+    text-shadow: 1px 1px #000000;
 }
 
-.choice-button:hover {
-    background-color: #777777; /* Efecto hover más claro */
-    transform: translateY(-2px); /* Pequeño levantamiento */
+button:hover:not(.disabled-button) {
+    background-color: #6A1BA0; /* Tono más oscuro al pasar el mouse */
+    transform: translateY(-2px);
 }
 
-.choice-button:active {
-    background-color: #444444; /* Efecto click más oscuro */
-    transform: translateY(0);
-}
-
-.choice-button:disabled {
-    background-color: #3a3a3a; /* Botón deshabilitado */
-    color: #999999;
+.disabled-button {
+    background-color: #555555;
     cursor: not-allowed;
-    border-color: #555555;
+    opacity: 0.7;
+    transform: none;
 }
 
-/* Resultados de votos */
-#vote-results {
+/* Estilos específicos para la pantalla de inicio */
+#start-screen .mode-button {
+    display: block;
+    width: 80%;
+    max-width: 300px;
+    margin: 10px auto;
+    font-size: 1.1em;
+    padding: 15px 30px;
+}
+
+.queue-status p {
     margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px dashed #666666; /* Separador de resultados */
-    color: #c0c0c0;
-    text-align: center;
-    font-size: 0.95em;
+    font-size: 0.9em;
+    color: #bbb;
+}
+.queue-status span {
+    font-weight: bold;
+    color: #fff;
 }
 
-#vote-results div {
+/* Estilos de Selección de Personaje */
+#characters-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    justify-content: center;
+}
+
+.character-card {
+    background-color: #444444;
+    border: 2px solid #555555;
+    border-radius: 10px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-align: left; /* Alinea el contenido a la izquierda */
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.character-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    border-color: #8A2BE2;
+    box-shadow: 0 6px 12px rgba(138, 43, 226, 0.4);
+}
+
+.character-card.selected {
+    border-color: #4CAF50; /* Verde vibrante para selección */
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.7);
+    transform: scale(1.05);
+    background-color: #3d3d3d; /* Ligeramente más oscuro al seleccionar */
+}
+
+.character-card h3 {
+    color: #F0F0F0;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    text-shadow: none;
+}
+.character-card p {
+    font-size: 0.85em;
+    color: #ccc;
+    margin: 5px 0;
+}
+.character-card h4 {
+    margin-top: 15px;
     margin-bottom: 5px;
+    color: #eee;
+    font-size: 0.9em;
+    text-shadow: none;
 }
-
-/* Lista de jugadores */
-#player-list ul {
+.character-card ul {
     list-style: none;
     padding: 0;
-    text-align: center;
+    margin: 0;
+}
+.character-card ul li {
+    font-size: 0.8em;
+    color: #c0c0c0;
+    margin-bottom: 3px;
+}
+.character-card ul li strong {
+    color: #fff;
 }
 
-#player-list li {
-    background-color: #444444; /* Fondo para cada jugador */
-    color: #ffffff;
-    padding: 8px 15px;
-    margin-bottom: 5px;
-    border-radius: 4px;
-    font-size: 0.9em;
+#confirm-character-selection {
+    margin-top: 20px;
+    width: 80%;
+    max-width: 300px;
 }
 
-/* Formulario de creación de personaje */
-#character-creation label {
+/* Pantalla de Ingreso de Nombre (NUEVO) */
+#name-input-screen label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
     font-weight: bold;
     color: #e0e0e0;
 }
 
-#character-creation input[type="text"],
-#character-creation select {
-    width: calc(100% - 22px); /* Ancho del input/select */
+#name-input-screen input[type="text"] {
+    width: calc(100% - 22px); /* Ajustar padding y borde */
     padding: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     border: 1px solid #777777;
-    border-radius: 4px;
-    background-color: #2a2a2a; /* Fondo de inputs oscuro */
-    color: #f0f0f0; /* Texto de inputs claro */
-    font-size: 1em;
-}
-
-#character-creation button {
-    background-color: #4CAF50; /* Un toque de color para el botón principal (verde), puedes cambiarlo a gris */
-    background-color: #666666; /* Usando gris para mantener el blanco y negro */
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    width: 100%;
-    transition: background-color 0.3s ease;
-}
-
-#character-creation button:hover {
-    background-color: #888888;
-}
-
-/* Estilos del Chat */
-#chat-container {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #222222; /* Fondo del chat un poco más oscuro */
-    border: 1px solid #444444;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 600px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    display: flex;
-    flex-direction: column;
-    min-height: 150px; /* Altura mínima del chat */
-    max-height: 300px; /* Altura máxima del chat */
-}
-
-#messages {
-    flex-grow: 1; /* Permite que ocupe el espacio disponible */
-    overflow-y: auto; /* Scroll si hay muchos mensajes */
-    padding: 10px;
-    background-color: #1a1a1a; /* Fondo de la ventana de mensajes */
-    border: 1px solid #444444;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    color: #d0d0d0; /* Color de texto de los mensajes */
-}
-
-#messages div {
-    margin-bottom: 5px;
-    word-wrap: break-word; /* Rompe palabras largas para que no desborden */
-}
-
-#chat-container input[type="text"] {
-    width: calc(100% - 70px); /* Ancho del input para dejar espacio al botón */
-    padding: 10px;
-    border: 1px solid #666666;
     border-radius: 4px;
     background-color: #2a2a2a;
     color: #f0f0f0;
-    font-size: 0.95em;
-    box-sizing: border-box; /* Importante para el ancho */
-    float: left; /* Para que el input y botón estén en la misma línea */
+    font-size: 1em;
+    box-sizing: border-box; /* Crucial para el width */
+    text-align: center;
+    font-family: 'Press Start 2P', cursive, Arial, sans-serif; /* Usar la fuente retro */
 }
 
-#chat-container button {
-    width: 60px; /* Ancho del botón de enviar */
-    padding: 10px;
-    background-color: #555555;
+#name-input-screen button {
+    background-color: #555555; /* Un color neutro para el botón de confirmar nombre */
     color: white;
-    border: 1px solid #888888;
-    border-radius: 4px;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 0.95em;
-    float: right; /* Para que el input y botón estén en la misma línea */
-    box-sizing: border-box;
+    font-size: 1.1em;
+    width: 100%;
+    max-width: 300px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
     transition: background-color 0.3s ease;
 }
 
-#chat-container button:hover {
+#name-input-screen button:hover:not(.disabled-button) {
     background-color: #777777;
 }
 
-/* Limpiar flotadores */
-#chat-container::after {
-    content: "";
-    display: table;
-    clear: both;
+/* Para el texto del personaje seleccionado */
+#selected-character-display {
+    color: #fff; /* Blanco */
+    font-size: 1.2em;
+    display: block; /* Para que ocupe su propia línea */
+    margin-bottom: 15px;
+    font-weight: bold;
 }
 
-/* Responsividad básica para pantallas pequeñas */
-@media (max-width: 768px) {
-    #game-container,
-    #chat-container,
-    #player-list-container,
-    #character-creation {
-        padding: 15px;
-    }
 
-    .choice-button {
-        font-size: 0.9em;
-        padding: 10px 15px;
-    }
+/* Sala de Espera / Waiting Room */
+#waiting-players-list-container h3 {
+    color: #fff;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    font-size: 1.1em;
 }
-/* public/style.css - AÑADIR ESTO AL FINAL DEL ARCHIVO */
 
-/* ========================================= */
-/* --- Estilos Responsivos para Móviles --- */
-/* ========================================= */
+#waiting-players-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
 
+#waiting-players-list li {
+    background-color: #3a3a3a;
+    margin-bottom: 5px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.95em;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+#waiting-players-list li strong {
+    color: #4CAF50; /* Resaltar HP o nombre */
+}
+
+/* Pantalla de Combate */
+#game-info {
+    margin-bottom: 20px;
+    border: 1px solid #555;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #333;
+}
+
+#game-info p {
+    margin: 5px 0;
+    font-size: 1.1em;
+}
+
+#game-info span {
+    font-weight: bold;
+    color: #4CAF50;
+}
+
+#combat-log {
+    background-color: #1f1f1f;
+    border: 1px solid #444;
+    height: 150px;
+    overflow-y: scroll;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    text-align: left;
+    font-family: Arial, sans-serif; /* Fuente más legible para el log */
+    font-size: 0.9em;
+    color: #e0e0e0;
+}
+
+#combat-log p {
+    margin: 5px 0;
+    color: #e0e0e0;
+    font-size: 1em; /* Ajustado para legibilidad */
+}
+
+#action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#action-buttons button {
+    flex-grow: 1;
+    max-width: 200px;
+}
+
+
+/* Chat y Lista de Jugadores (Lobby) */
+#player-list-container, #chat-container {
+    width: 90%;
+    max-width: 800px;
+    text-align: left;
+    margin-top: 10px;
+}
+
+#player-list {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0;
+}
+
+#player-list li {
+    background-color: #3a3a3a;
+    margin-bottom: 5px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 0.95em;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+#messages {
+    border: 1px solid #444;
+    height: 200px;
+    overflow-y: scroll;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #1f1f1f;
+    border-radius: 5px;
+    font-family: Arial, sans-serif; /* Fuente más legible para el chat */
+    font-size: 0.9em;
+}
+
+#messages div { /* Cambiado de li a div para adaptarse a game.js */
+    padding: 5px 0;
+    border-bottom: 1px dashed #333;
+    color: #e0e0e0;
+}
+
+#messages div:last-child {
+    border-bottom: none;
+}
+
+#chat-form {
+    display: flex;
+    gap: 10px;
+}
+
+#chat-form input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    font-family: 'Press Start 2P', cursive, Arial, sans-serif;
+    font-size: 0.85em;
+}
+
+#chat-form button {
+    padding: 8px 15px;
+    background-color: #008CBA; /* Un color diferente para el botón de chat */
+}
+
+#chat-form button:hover {
+    background-color: #007B9E;
+}
+
+
+/* Responsividad */
 @media (max-width: 768px) {
-    /* Estilos generales para pantallas de tablet y móviles */
     body {
-        padding: 15px; /* Menos padding en los bordes */
+        padding: 10px;
     }
 
-    h1, h2 {
-        font-size: 1.8em; /* Títulos un poco más pequeños */
+    h1 {
+        font-size: 1.8em;
+    }
+
+    .game-section {
+        padding: 15px;
+        width: 95%;
         margin-bottom: 15px;
     }
 
-    #game-container,
-    #chat-container,
-    #player-list-container,
-    #character-creation {
-        padding: 15px; /* Reducir padding interno de los contenedores */
-        width: 95%; /* Ocupar más ancho en pantallas pequeñas */
-        max-width: none; /* Eliminar el límite de ancho máximo */
-        margin-bottom: 15px; /* Reducir margen entre secciones */
+    /* Selección de Modo */
+    .mode-button {
+        width: calc(100% - 20px); /* Ocupan todo el ancho en móviles */
+        max-width: none;
+        margin: 5px 0;
+        font-size: 1.1em;
+        padding: 12px 25px;
     }
 
-    /* Estilos específicos del juego */
-    #story-text {
-        font-size: 1.1em; /* Texto de historia más pequeño */
-        line-height: 1.5;
-        margin-bottom: 15px;
+    /* Selección de Personaje */
+    #characters-container {
+        grid-template-columns: 1fr; /* Una sola columna en móviles */
+        gap: 15px;
     }
-
-    .choice-button {
-        font-size: 0.95em; /* Botones de elección más pequeños */
-        padding: 10px 15px;
-        margin: 8px 0; /* Un poco menos de margen y más alineados verticalmente */
-        width: 100%; /* Asegurar que los botones ocupen todo el ancho disponible */
-    }
-
-    /* Estilos del chat */
-    #chat-container {
-        min-height: 120px; /* Altura mínima del chat un poco menor */
-        max-height: 250px; /* Altura máxima del chat un poco menor */
-    }
-
-    #chat-container input[type="text"] {
-        width: calc(100% - 60px); /* Ajustar ancho del input del chat */
+    .character-card {
+        padding: 12px;
         font-size: 0.9em;
     }
-
-    #chat-container button {
-        width: 50px; /* Ajustar ancho del botón de enviar del chat */
-        font-size: 0.9em;
+    .character-card h3 {
+        font-size: 1.2em;
+    }
+    .character-card p, .character-card ul {
+        font-size: 0.8em;
     }
 
-    #messages {
-        font-size: 0.9em; /* Mensajes de chat más pequeños */
+    #confirm-character-selection {
+        font-size: 1em;
+        padding: 10px 20px;
+    }
+
+    /* Pantalla de Nombre */
+    #name-input-screen input[type="text"] {
+        font-size: 0.9em;
         padding: 8px;
     }
+    #name-input-screen button {
+        font-size: 1em;
+        padding: 10px 20px;
+    }
 
-    /* Lista de jugadores */
-    #player-list li {
-        font-size: 0.85em; /* Texto de la lista de jugadores más pequeño */
-        padding: 6px 10px;
+    /* Sala de Espera / Combate Log */
+    #waiting-players-list li, #combat-log {
+        font-size: 0.9em;
+    }
+
+    /* Chat y Lista de Jugadores */
+    #messages {
+        height: 150px;
+        font-size: 0.9em;
+    }
+
+    #chat-form input, #chat-form button {
+        padding: 6px;
+        font-size: 0.9em;
     }
 }
 
 @media (max-width: 480px) {
-    /* Estilos para teléfonos muy pequeños (ajustes adicionales) */
     h1 {
-        font-size: 1.6em;
+        font-size: 1.5em;
     }
-    h2 {
-        font-size: 1.4em;
+
+    .game-section {
+        padding: 10px;
     }
-    .choice-button {
-        font-size: 0.9em; /* Aún más pequeños si es necesario */
-        padding: 8px 12px;
+
+    button {
+        font-size: 0.8em;
+        padding: 10px 15px;
     }
-    #chat-container input[type="text"] {
-        font-size: 0.85em;
+
+    #start-screen .mode-button {
+        font-size: 1em;
+        padding: 10px 20px;
     }
-    #chat-container button {
-        font-size: 0.85em;
+
+    .character-card {
+        width: 90%; /* Más ancho en pantallas muy pequeñas */
+        max-width: none;
+    }
+
+    #action-buttons button {
+        width: 100%;
     }
 }

@@ -3,56 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Juego de Elecciones: Aventura Grupal</title>
+    <title>RPG de Combate por Turnos</title>
     <link rel="stylesheet" href="style.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-    <div id="game-container">
-        <h1>Juego de Elecciones: Aventura Grupal</h1>
+    <h1>RPG de Combate por Turnos</h1>
 
-        <div id="character-creation" class="screen active">
-            <h2>Crea tu Personaje</h2>
-            <label for="playerName">Nombre:</label>
-            <input type="text" id="playerName" maxlength="20" placeholder="Tu nombre de aventurero" required>
-            <label for="playerClass">Clase:</label>
-            <select id="playerClass" required>
-                <option value="">Selecciona una clase</option>
-                <option value="Guerrero">Guerrero</option>
-                <option value="Mago">Mago</option>
-                <option value="Explorador">Explorador</option>
-            </select>
-            <label for="playerBackground">Trasfondo:</label>
-            <select id="playerBackground" required>
-                <option value="">Selecciona un trasfondo</option>
-                <option value="Noble">Noble</option>
-                <option value="Campesino">Campesino</option>
-                <option value="Misterioso">Misterioso</option>
-            </select>
-            <button id="createCharacterBtn">Comenzar Aventura</button>
-        </div>
-
-        <div id="game-screen" class="screen">
-            <div id="players-list-container">
-                <h2>Jugadores Conectados</h2>
-                <ul id="playersList">
-                    </ul>
-            </div>
-
-            <div id="story-area">
-                <p id="storyText">Cargando historia...</p>
-                <div id="choices-container">
-                    </div>
-                <div id="voting-status"></div>
-            </div>
-
-            <div id="chat-container">
-                <h2>Chat de la Sala</h2>
-                <div id="messages"></div>
-                <input id="m" autocomplete="off" placeholder="Escribe tu mensaje..." /><button id="send-chat">Enviar</button>
-            </div>
+    <div id="start-screen" class="game-section">
+        <h2>Selecciona un Modo de Juego</h2>
+        <button id="mode-1v1" class="mode-button">1 vs 1</button>
+        <button id="mode-2v2" class="mode-button">2 vs 2</button>
+        <div class="queue-status">
+            <p>Jugadores en cola 1v1: <span id="queue-1v1-count">0</span></p>
+            <p>Jugadores en cola 2v2: <span id="queue-2v2-count">0</span></p>
         </div>
     </div>
 
-    <script src="game.js"></script> </body>
+    <div id="character-selection-screen" class="game-section hidden">
+        <h2>Selecciona tu Personaje</h2>
+        <div id="characters-container">
+            </div>
+        <button id="confirm-character-selection" class="disabled-button" disabled>Confirmar Selección</button>
+    </div>
+
+    <div id="name-input-screen" class="game-section hidden">
+        <h2>¡Casi listo!</h2>
+        <p>Has seleccionado a <strong id="selected-character-display"></strong>.</p>
+        <label for="player-name-input">Ingresa tu Nombre de Jugador:</label>
+        <input type="text" id="player-name-input" placeholder="Tu Nombre Épico" maxlength="16">
+        <button id="confirm-name-button" class="disabled-button" disabled>Entrar a la Sala</button>
+    </div>
+
+    <div id="waiting-room-screen" class="game-section hidden">
+        <h2>Esperando Jugadores...</h2>
+        <p>Modo: <span id="waiting-room-mode"></span></p>
+        <div id="waiting-players-list-container">
+            <h3>Jugadores en tu Sala:</h3>
+            <ul id="waiting-players-list">
+                </ul>
+        </div>
+        <p>¡Preparándote para la batalla!</p>
+    </div>
+
+    <div id="combat-screen" class="game-section hidden">
+        <h2>¡En Combate!</h2>
+        <div id="game-info">
+            <p>Tu Personaje: <span id="my-character-name"></span></p>
+            <p>HP: <span id="my-character-hp"></span></p>
+            </div>
+        <div id="combat-log"></div>
+        <div id="action-buttons">
+            </div>
+    </div>
+
+    <div id="player-list-container" class="game-section">
+        <h2>Jugadores Conectados (Lobby)</h2>
+        <ul id="player-list">
+            </ul>
+    </div>
+
+    <div id="chat-container" class="game-section">
+        <h2>Chat del Lobby</h2>
+        <div id="messages"></div>
+        <form id="chat-form">
+            <input id="m" autocomplete="off" placeholder="Escribe un mensaje..." /><button>Enviar</button>
+        </form>
+    </div>
+
+    <script src="game.js"></script>
+</body>
 </html>
