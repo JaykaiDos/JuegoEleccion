@@ -1,248 +1,222 @@
-// public/game.js
-
 const socket = io();
 
-// --- Elementos del DOM ---
+// Personajes definidos para selección y estado
+const characters = [
+    {
+        id: 'warrior',
+        name: 'Deimos',
+        initialHp: 100,
+        baseAttack: 15,
+        abilities: [
+            { id: 'slash', name: 'Golpe de rata' },
+            { id: 'bash', name: 'Gran golpe de rata' },
+        ],
+    },
+    {
+        id: 'mage',
+        name: 'Chris',
+        initialHp: 80,
+        baseAttack: 20,
+        abilities: [
+            { id: 'fireball', name: 'Fekear' },
+            { id: 'icebolt', name: 'Simpear' },
+        ],
+    }
+];
+
+// --- Elementos DOM ---
+const nameInputScreen = document.getElementById('name-input-screen');
+const playerNameInput = document.getElementById('player-name-input');
+const confirmNameButton = document.getElementById('confirm-name-button');
+
 const startScreen = document.getElementById('start-screen');
-const mode1v1Button = document.getElementById('mode-1v1');
-const mode2v2Button = document.getElementById('mode-2v2');
-const queue1v1Count = document.getElementById('queue-1v1-count');
-const queue2v2Count = document.getElementById('queue-2v2-count');
+const mode1v1Btn = document.getElementById('mode-1v1');
 
 const characterSelectionScreen = document.getElementById('character-selection-screen');
 const charactersContainer = document.getElementById('characters-container');
-const confirmCharacterSelectionButton = document.getElementById('confirm-character-selection');
-
-// Elementos del DOM para la pantalla de ingreso de nombre (NUEVO)
-const nameInputScreen = document.getElementById('name-input-screen');
-const selectedCharacterDisplay = document.getElementById('selected-character-display');
-const playerNameInput = document.getElementById('player-name-input');
-const confirmNameButton = document.getElementById('confirm-name-button');
+const confirmCharacterBtn = document.getElementById('confirm-character-selection');
 
 const waitingRoomScreen = document.getElementById('waiting-room-screen');
 const waitingRoomModeSpan = document.getElementById('waiting-room-mode');
 const waitingPlayersList = document.getElementById('waiting-players-list');
 
 const combatScreen = document.getElementById('combat-screen');
-const myCharacterNameDisplay = document.getElementById('my-character-name');
-const myCharacterHpDisplay = document.getElementById('my-character-hp');
-const combatLog = document.getElementById('combat-log');
-const actionButtons = document.getElementById('action-buttons');
+const myCharacterNameEl = document.getElementById('my-character-name');
+const myCharacterHpEl = document.getElementById('my-character-hp');
+const actionButtonsDiv = document.getElementById('action-buttons');
+const combatLogEl = document.getElementById('combat-log');
 
-const chatContainer = document.getElementById('chat-container');
-const messages = document.getElementById('messages');
+const chatAndOnline = document.getElementById('chat-and-online');
+const messagesList = document.getElementById('messages');
 const chatForm = document.getElementById('chat-form');
-const messageInput = document.getElementById('m');
+const chatInput = document.getElementById('m');
 
-const playerListContainer = document.getElementById('player-list-container');
+const onlineList = document.getElementById('online-list');
 const playerList = document.getElementById('player-list');
 
+// Variables globales
+let playerName = '';
+let selectedCharacter = null;
+let mySocketId = '';
+let currentTurnSocketId = '';
+let playersInRoom = [];
 
-let selectedCharacterId = null;
-let myPlayerInfo = null; // Almacenará la información de nuestro propio jugador (incluido el nombre)
-
-// --- Funciones de Utilidad ---
-function showScreen(screenElement) {
-    const screens = [
-        startScreen,
-        characterSelectionScreen,
-        nameInputScreen, // ¡Añadida!
-        waitingRoomScreen,
-        combatScreen
-    ]; // Sólo las pantallas principales de flujo
-
-    screens.forEach(screen => {
-        if (screen.classList.contains('game-section')) {
-            screen.classList.add('hidden');
-        }
-    });
-
-    screenElement.classList.remove('hidden');
-
-    // Mantenemos el chat y la lista de jugadores siempre visibles
-    playerListContainer.classList.remove('hidden');
-    chatContainer.classList.remove('hidden');
+// --- Funciones helper para mostrar/ocultar ---
+function showScreen(screen) {
+    document.querySelectorAll('.game-section').forEach(s => s.classList.add('hidden'));
+    screen.classList.remove('hidden');
 }
 
-// Función para habilitar/deshabilitar botón con estilos
-function setButtonEnabled(button, isEnabled) {
-    button.disabled = !isEnabled;
-    if (isEnabled) {
-        button.classList.remove('disabled-button');
-    } else {
-        button.classList.add('disabled-button');
-    }
-}
+// --- Inicio ---
+showScreen(nameInputScreen);
 
-// --- Eventos de Selección de Modo de Juego ---
-mode1v1Button.addEventListener('click', () => {
-    socket.emit('selectMode', '1v1');
-    showScreen(characterSelectionScreen);
-});
-
-mode2v2Button.addEventListener('click', () => {
-    socket.emit('selectMode', '2v2');
-    showScreen(characterSelectionScreen);
-});
-
-// --- Lógica de Selección de Personaje ---
-socket.on('charactersData', (characters) => { // Renombrado de 'characterList' a 'charactersData' para claridad
-    charactersContainer.innerHTML = '';
-    for (const charId in characters) {
-        const char = characters[charId];
-        const charCard = document.createElement('div');
-        charCard.classList.add('character-card');
-        charCard.dataset.characterId = char.id;
-        charCard.innerHTML = `
-            <h3>${char.name} (${char.race})</h3>
-            <p>Clase: ${char.class}</p>
-            <p>HP: ${char.initialHp}</p>
-            <p>Ataque: ${char.baseAttack}</p>
-            <h4>Habilidades:</h4>
-            <ul>
-                ${char.abilities.map(ability => `<li><strong>${ability.name}</strong>: ${ability.description}</li>`).join('')}
-            </ul>
-        `;
-        charCard.addEventListener('click', () => {
-            // Remover la selección de las otras tarjetas
-            document.querySelectorAll('.character-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            // Seleccionar esta tarjeta
-            charCard.classList.add('selected');
-            selectedCharacterId = char.id;
-            setButtonEnabled(confirmCharacterSelectionButton, true);
-        });
-        charactersContainer.appendChild(charCard);
-    }
-});
-
-confirmCharacterSelectionButton.addEventListener('click', () => {
-    if (selectedCharacterId) {
-        socket.emit('characterSelected', selectedCharacterId); // Ahora este evento solo indica la selección del personaje
-        setButtonEnabled(confirmCharacterSelectionButton, false);
-        confirmCharacterSelectionButton.textContent = 'Seleccionado...';
-    }
-});
-
-// --- Lógica para la pantalla de ingreso de nombre (NUEVO) ---
-playerNameInput.addEventListener('input', () => {
-    // Habilitar botón si hay texto y no es solo espacios
-    if (playerNameInput.value.trim().length > 0) {
-        setButtonEnabled(confirmNameButton, true);
-    } else {
-        setButtonEnabled(confirmNameButton, false);
-    }
-});
-
+// --- Manejo ingreso nombre ---
 confirmNameButton.addEventListener('click', () => {
-    const playerName = playerNameInput.value.trim();
-    if (playerName) {
-        // Enviamos el nombre del jugador junto con el personaje seleccionado al servidor
-        socket.emit('playerReadyForMatchmaking', {
-            characterId: selectedCharacterId,
-            playerName: playerName
+    const name = playerNameInput.value.trim();
+    if (name.length < 2) {
+        alert('Ingresa un nombre válido.');
+        return;
+    }
+    playerName = name;
+    showScreen(startScreen);
+});
+
+// --- Selección modo ---
+mode1v1Btn.addEventListener('click', () => {
+    // Solo tenemos 1 modo por ahora
+    showScreen(characterSelectionScreen);
+    renderCharacterOptions();
+});
+
+// --- Render personajes ---
+function renderCharacterOptions() {
+    charactersContainer.innerHTML = '';
+    characters.forEach(char => {
+        const card = document.createElement('div');
+        card.classList.add('character-card');
+        card.dataset.id = char.id;
+        card.innerHTML = `<div class="character-name">${char.name}</div>`;
+        card.addEventListener('click', () => {
+            selectCharacter(char.id);
         });
-        setButtonEnabled(confirmNameButton, false); // Deshabilitar para evitar múltiples envíos
-        confirmNameButton.textContent = 'Uniendo...';
-    }
-});
+        charactersContainer.appendChild(card);
+    });
+    confirmCharacterBtn.disabled = true;
+}
 
-// --- Eventos de Socket.IO ---
+function selectCharacter(charId) {
+    selectedCharacter = characters.find(c => c.id === charId);
+    // Quitar selección anterior
+    document.querySelectorAll('.character-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    // Marcar seleccionado
+    const selectedCard = document.querySelector(`.character-card[data-id="${charId}"]`);
+    if (selectedCard) selectedCard.classList.add('selected');
+    confirmCharacterBtn.disabled = false;
+}
 
-// Actualiza el contador de jugadores en cola
-socket.on('queueUpdate', (counts) => {
-    queue1v1Count.textContent = counts['1v1'];
-    queue2v2Count.textContent = counts['2v2'];
-});
-
-// Cuando el servidor confirma la selección del personaje (para mostrar la pantalla de nombre)
-socket.on('characterSelected', (playerInfo) => { // playerInfo ahora solo tiene charData, socketId y mode
-    myPlayerInfo = playerInfo; // Guardamos la info temporal del personaje seleccionado
-    selectedCharacterDisplay.textContent = myPlayerInfo.characterData.name; // Mostrar el personaje seleccionado en la pantalla de nombre
-    showScreen(nameInputScreen); // Mostrar la pantalla de ingreso de nombre
-    playerNameInput.value = ''; // Limpiar input por si acaso
-    setButtonEnabled(confirmNameButton, false);
-    confirmNameButton.textContent = 'Entrar a la Sala';
-    console.log('Mi personaje seleccionado (temporal):', myPlayerInfo);
-});
-
-
-// Cuando el servidor envía a la sala de espera (después de ingresar el nombre y estar listo para matchmaking)
-socket.on('showWaitingRoom', (data) => { // 'data' ahora debería contener {mode, playerInfo (completo)}
-    waitingRoomModeSpan.textContent = data.mode;
-    // Si el chat tiene un título específico para el lobby, lo ajustaríamos aquí
-    chatContainer.querySelector('h2').textContent = `Chat de la Sala de Espera (${data.mode})`;
+// --- Confirmar personaje ---
+confirmCharacterBtn.addEventListener('click', () => {
+    if (!selectedCharacter) return;
+    // Enviar datos al servidor
+    socket.emit('player-join', {
+        name: playerName,
+        character: selectedCharacter
+    });
     showScreen(waitingRoomScreen);
-
-    // Si ya tenemos el objeto completo de myPlayerInfo con el nombre, lo actualizamos
-    if (data.playerInfo) {
-        myPlayerInfo = data.playerInfo;
-        console.log('Mi información completa en sala de espera:', myPlayerInfo);
-    }
+    waitingRoomModeSpan.textContent = '1 vs 1';
 });
 
-// Unirse a una sala específica de combate
-socket.on('joinedRoom', (data) => {
-    console.log(`Unido a la sala ${data.roomId} de tipo ${data.roomType}`);
-    // Actualizar myPlayerInfo con los datos completos de la sala
-    myPlayerInfo = data.players.find(p => p.socketId === socket.id);
-    showScreen(combatScreen); // Muestra la pantalla de combate
-    if (myPlayerInfo) { // Asegurarse de que myPlayerInfo esté disponible
-        myCharacterNameDisplay.textContent = myPlayerInfo.name; // Usar el nombre del jugador
-        myCharacterHpDisplay.textContent = `${myPlayerInfo.currentHp} / ${myPlayerInfo.maxHp}`;
-    }
-    chatContainer.querySelector('h2').textContent = `Chat de la Sala de Combate (${data.roomType})`;
-});
-
-// Actualizar la lista de jugadores dentro de la sala de combate
-socket.on('updateRoomPlayers', (players) => {
+// --- Sala de espera ---
+socket.on('waiting-room-update', ({ players }) => {
     waitingPlayersList.innerHTML = '';
+    playersInRoom = players;
     players.forEach(p => {
-        const listItem = document.createElement('li');
-        listItem.textContent = `${p.name} (${p.characterData.name}) - HP: ${p.currentHp}/${p.maxHp}`;
-        if (p.socketId === socket.id) {
-            listItem.style.fontWeight = 'bold'; // Resaltar a nuestro propio jugador
-        }
-        waitingPlayersList.appendChild(listItem);
+        const li = document.createElement('li');
+        li.textContent = p.name + (p.socketId === mySocketId ? ' (Tú)' : '');
+        waitingPlayersList.appendChild(li);
     });
 });
 
-// Actualizar la lista global de jugadores (lobby)
-socket.on('updatePlayerList', (players) => {
-    playerList.innerHTML = '';
-    if (players.length === 0) {
-        const listItem = document.createElement('li');
-        listItem.textContent = "No hay jugadores conectados en el lobby.";
-        playerList.appendChild(listItem);
-    } else {
-        players.forEach(player => {
-            const listItem = document.createElement('li');
-            listItem.textContent = player.name; // Usar el nombre directamente
-            playerList.appendChild(listItem);
+// --- Inicio de juego ---
+socket.on('game-start', ({ players, turnSocketId, log }) => {
+    playersInRoom = players;
+    currentTurnSocketId = turnSocketId;
+    showScreen(combatScreen);
+    chatAndOnline.classList.remove('hidden');
+
+    // Encontrar info propia
+    const me = players.find(p => p.socketId === socket.id);
+    myCharacterNameEl.textContent = me.character.name;
+    updateHpDisplay(me.hp, me.maxHp);
+
+    renderActionButtons(me.character.abilities);
+    updateCombatLog(log);
+});
+
+// --- Actualización del juego ---
+socket.on('game-update', ({ players, turnSocketId, log }) => {
+    playersInRoom = players;
+    currentTurnSocketId = turnSocketId;
+
+    const me = players.find(p => p.socketId === socket.id);
+    if (me) {
+        updateHpDisplay(me.hp, me.maxHp);
+    }
+    renderActionButtons(me.character.abilities, currentTurnSocketId === socket.id);
+
+    updateCombatLog(log);
+});
+
+// --- Actualizar vida en pantalla ---
+function updateHpDisplay(hp, maxHp) {
+    myCharacterHpEl.textContent = `${hp} / ${maxHp}`;
+}
+
+// --- Render botones de habilidades ---
+function renderActionButtons(abilities, isMyTurn = false) {
+    actionButtonsDiv.innerHTML = '';
+    abilities.forEach(ability => {
+        const btn = document.createElement('button');
+        btn.textContent = ability.name;
+        btn.disabled = !isMyTurn;
+        btn.addEventListener('click', () => {
+            socket.emit('player-action', { abilityId: ability.id });
         });
-    }
-});
+        actionButtonsDiv.appendChild(btn);
+    });
+}
 
-// Manejo de mensajes de chat
-chatForm.addEventListener('submit', (e) => {
+// --- Actualizar log de combate ---
+function updateCombatLog(log) {
+    combatLogEl.innerHTML = '';
+    log.forEach(line => {
+        const p = document.createElement('p');
+        p.textContent = line;
+        combatLogEl.appendChild(p);
+    });
+    combatLogEl.scrollTop = combatLogEl.scrollHeight;
+}
+
+// --- Chat ---
+chatForm.addEventListener('submit', e => {
     e.preventDefault();
-    if (messageInput.value) {
-        socket.emit('chat message', messageInput.value);
-        messageInput.value = '';
-    }
+    const msg = chatInput.value.trim();
+    if (msg.length === 0) return;
+    socket.emit('chat-message', msg);
+    chatInput.value = '';
 });
 
-socket.on('chat message', (msg) => {
-    const item = document.createElement('div'); // Cambiado a div para mayor flexibilidad
-    item.textContent = msg;
-    messages.appendChild(item);
-    messages.scrollTop = messages.scrollHeight;
+socket.on('chat-message', ({ name, message }) => {
+    const li = document.createElement('li');
+    li.textContent = `${name}: ${message}`;
+    messagesList.appendChild(li);
+    messagesList.scrollTop = messagesList.scrollHeight;
 });
 
-
-// --- Gestión de Visibilidad de Pantallas al inicio ---
-document.addEventListener('DOMContentLoaded', () => {
-    showScreen(startScreen);
-    socket.emit('requestPlayerList'); // Solicita la lista de jugadores al conectar
+// --- Lista jugadores online (simplificada) ---
+socket.on('connect', () => {
+    mySocketId = socket.id;
 });
+

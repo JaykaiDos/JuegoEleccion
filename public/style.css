@@ -1,472 +1,192 @@
-/* public/style.css */
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
 body {
-    font-family: 'Press Start 2P', cursive, Arial, sans-serif; /* Fuente retro si la tienes */
-    background-color: #1a1a1a;
-    color: #f0f0f0;
-    margin: 0;
-    padding: 20px;
+    background-color: #000;
+    color: #fff;
     display: flex;
+    min-height: 100vh;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Alinear arriba para permitir scroll */
-    min-height: 100vh;
-    box-sizing: border-box;
-    overflow-y: auto; /* Permitir scroll en el body si el contenido es largo */
+    justify-content: flex-start;
+    padding: 20px;
 }
 
-/* Importar una fuente retro si la deseas */
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-
-h1, h2, h3, h4 {
-    color: #ffffff;
-    text-align: center;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px #000000; /* Sombra para efecto retro */
-}
-
-/* Contenedores principales de secciones */
 .game-section {
-    background-color: #333333;
-    border: 1px solid #666666;
-    border-radius: 8px;
-    padding: 25px;
-    margin-bottom: 20px;
-    width: 90%;
-    max-width: 800px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-    box-sizing: border-box; /* Incluir padding y border en el ancho total */
+    width: 100%;
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #111;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #444;
+    text-align: center;
 }
 
 .hidden {
-    display: none !important;
+    display: none;
 }
 
-/* Botones Generales */
-button {
-    background-color: #8A2BE2; /* Azul violeta */
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-family: 'Press Start 2P', cursive, Arial, sans-serif;
-    font-size: 0.9em;
-    margin: 5px;
-    transition: background-color 0.3s ease, transform 0.1s ease;
-    text-shadow: 1px 1px #000000;
-}
-
-button:hover:not(.disabled-button) {
-    background-color: #6A1BA0; /* Tono más oscuro al pasar el mouse */
-    transform: translateY(-2px);
-}
-
-.disabled-button {
-    background-color: #555555;
-    cursor: not-allowed;
-    opacity: 0.7;
-    transform: none;
-}
-
-/* Estilos específicos para la pantalla de inicio */
-#start-screen .mode-button {
-    display: block;
+input[type="text"] {
     width: 80%;
-    max-width: 300px;
-    margin: 10px auto;
-    font-size: 1.1em;
-    padding: 15px 30px;
-}
-
-.queue-status p {
-    margin-top: 15px;
-    font-size: 0.9em;
-    color: #bbb;
-}
-.queue-status span {
-    font-weight: bold;
-    color: #fff;
-}
-
-/* Estilos de Selección de Personaje */
-#characters-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-top: 25px;
-    margin-bottom: 25px;
-    justify-content: center;
-}
-
-.character-card {
-    background-color: #444444;
-    border: 2px solid #555555;
-    border-radius: 10px;
-    padding: 15px;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    text-align: left; /* Alinea el contenido a la izquierda */
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-}
-
-.character-card:hover {
-    transform: translateY(-5px) scale(1.02);
-    border-color: #8A2BE2;
-    box-shadow: 0 6px 12px rgba(138, 43, 226, 0.4);
-}
-
-.character-card.selected {
-    border-color: #4CAF50; /* Verde vibrante para selección */
-    box-shadow: 0 0 20px rgba(76, 175, 80, 0.7);
-    transform: scale(1.05);
-    background-color: #3d3d3d; /* Ligeramente más oscuro al seleccionar */
-}
-
-.character-card h3 {
-    color: #F0F0F0;
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 1.1em;
-    text-shadow: none;
-}
-.character-card p {
-    font-size: 0.85em;
-    color: #ccc;
-    margin: 5px 0;
-}
-.character-card h4 {
-    margin-top: 15px;
-    margin-bottom: 5px;
-    color: #eee;
-    font-size: 0.9em;
-    text-shadow: none;
-}
-.character-card ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-.character-card ul li {
-    font-size: 0.8em;
-    color: #c0c0c0;
-    margin-bottom: 3px;
-}
-.character-card ul li strong {
-    color: #fff;
-}
-
-#confirm-character-selection {
-    margin-top: 20px;
-    width: 80%;
-    max-width: 300px;
-}
-
-/* Pantalla de Ingreso de Nombre (NUEVO) */
-#name-input-screen label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 1.1em;
-    font-weight: bold;
-    color: #e0e0e0;
-}
-
-#name-input-screen input[type="text"] {
-    width: calc(100% - 22px); /* Ajustar padding y borde */
     padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #777777;
-    border-radius: 4px;
-    background-color: #2a2a2a;
-    color: #f0f0f0;
-    font-size: 1em;
-    box-sizing: border-box; /* Crucial para el width */
-    text-align: center;
-    font-family: 'Press Start 2P', cursive, Arial, sans-serif; /* Usar la fuente retro */
+    border: none;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    background: #222;
+    color: #fff;
 }
 
-#name-input-screen button {
-    background-color: #555555; /* Un color neutro para el botón de confirmar nombre */
-    color: white;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 5px;
+button {
     cursor: pointer;
-    font-size: 1.1em;
-    width: 100%;
-    max-width: 300px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-weight: 600;
     transition: background-color 0.3s ease;
 }
 
-#name-input-screen button:hover:not(.disabled-button) {
-    background-color: #777777;
+button:hover:not(.disabled-button) {
+    background: #ddd;
 }
 
-/* Para el texto del personaje seleccionado */
-#selected-character-display {
-    color: #fff; /* Blanco */
-    font-size: 1.2em;
-    display: block; /* Para que ocupe su propia línea */
-    margin-bottom: 15px;
-    font-weight: bold;
+.disabled-button {
+    background: #444 !important;
+    color: #999 !important;
+    cursor: default;
 }
 
-
-/* Sala de Espera / Waiting Room */
-#waiting-players-list-container h3 {
-    color: #fff;
-    margin-top: 15px;
-    margin-bottom: 10px;
-    font-size: 1.1em;
+.mode-button {
+    display: inline-block;
+    width: 150px;
+    margin: 0 10px;
 }
 
-#waiting-players-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-#waiting-players-list li {
-    background-color: #3a3a3a;
-    margin-bottom: 5px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 0.95em;
-    text-align: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-#waiting-players-list li strong {
-    color: #4CAF50; /* Resaltar HP o nombre */
-}
-
-/* Pantalla de Combate */
-#game-info {
-    margin-bottom: 20px;
-    border: 1px solid #555;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #333;
-}
-
-#game-info p {
-    margin: 5px 0;
-    font-size: 1.1em;
-}
-
-#game-info span {
-    font-weight: bold;
-    color: #4CAF50;
-}
-
-#combat-log {
-    background-color: #1f1f1f;
-    border: 1px solid #444;
-    height: 150px;
-    overflow-y: scroll;
-    padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    text-align: left;
-    font-family: Arial, sans-serif; /* Fuente más legible para el log */
-    font-size: 0.9em;
-    color: #e0e0e0;
-}
-
-#combat-log p {
-    margin: 5px 0;
-    color: #e0e0e0;
-    font-size: 1em; /* Ajustado para legibilidad */
-}
-
-#action-buttons {
+.characters-container {
     display: flex;
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.character-card {
+    background: #222;
+    border-radius: 10px;
+    padding: 15px;
+    width: 120px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+}
+
+.character-card.selected {
+    border-color: #fff;
+}
+
+.character-card:hover {
+    border-color: #666;
+}
+
+.character-name {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.combat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.action-buttons button {
+    margin-left: 10px;
+}
+
+.combat-log {
+    background: #111;
+    border-radius: 8px;
     margin-top: 20px;
-}
-
-#action-buttons button {
-    flex-grow: 1;
-    max-width: 200px;
-}
-
-
-/* Chat y Lista de Jugadores (Lobby) */
-#player-list-container, #chat-container {
-    width: 90%;
-    max-width: 800px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    font-size: 0.9rem;
     text-align: left;
-    margin-top: 10px;
+    color: #ccc;
 }
 
-#player-list {
-    list-style: none;
-    padding: 0;
-    margin: 10px 0;
-}
-
-#player-list li {
-    background-color: #3a3a3a;
-    margin-bottom: 5px;
-    padding: 8px 12px;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 0.95em;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+.chat-container {
+    background: #111;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 20px;
 }
 
 #messages {
-    border: 1px solid #444;
-    height: 200px;
-    overflow-y: scroll;
-    padding: 10px;
-    margin-bottom: 10px;
-    background-color: #1f1f1f;
-    border-radius: 5px;
-    font-family: Arial, sans-serif; /* Fuente más legible para el chat */
-    font-size: 0.9em;
+    list-style: none;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 5px;
 }
 
-#messages div { /* Cambiado de li a div para adaptarse a game.js */
-    padding: 5px 0;
-    border-bottom: 1px dashed #333;
-    color: #e0e0e0;
-}
-
-#messages div:last-child {
-    border-bottom: none;
+#messages li {
+    padding: 5px;
+    border-bottom: 1px solid #222;
 }
 
 #chat-form {
     display: flex;
-    gap: 10px;
+    margin-top: 10px;
 }
 
 #chat-form input {
     flex-grow: 1;
     padding: 8px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    background-color: #2a2a2a;
-    color: #f0f0f0;
-    font-family: 'Press Start 2P', cursive, Arial, sans-serif;
-    font-size: 0.85em;
+    border-radius: 5px 0 0 5px;
+    border: none;
+    background: #222;
+    color: #fff;
 }
 
 #chat-form button {
-    padding: 8px 15px;
-    background-color: #008CBA; /* Un color diferente para el botón de chat */
+    border-radius: 0 5px 5px 0;
 }
 
-#chat-form button:hover {
-    background-color: #007B9E;
+.online-container {
+    background: #111;
+    border-radius: 10px;
+    padding: 10px;
 }
 
+.online-list, .player-list {
+    list-style: none;
+    max-height: 150px;
+    overflow-y: auto;
+    padding: 5px;
+}
 
-/* Responsividad */
-@media (max-width: 768px) {
+@media (min-width: 768px) {
     body {
-        padding: 10px;
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
     }
-
-    h1 {
-        font-size: 1.8em;
-    }
-
     .game-section {
-        padding: 15px;
-        width: 95%;
-        margin-bottom: 15px;
+        margin: 20px;
     }
-
-    /* Selección de Modo */
-    .mode-button {
-        width: calc(100% - 20px); /* Ocupan todo el ancho en móviles */
-        max-width: none;
-        margin: 5px 0;
-        font-size: 1.1em;
-        padding: 12px 25px;
-    }
-
-    /* Selección de Personaje */
-    #characters-container {
-        grid-template-columns: 1fr; /* Una sola columna en móviles */
-        gap: 15px;
-    }
-    .character-card {
-        padding: 12px;
-        font-size: 0.9em;
-    }
-    .character-card h3 {
-        font-size: 1.2em;
-    }
-    .character-card p, .character-card ul {
-        font-size: 0.8em;
-    }
-
-    #confirm-character-selection {
-        font-size: 1em;
-        padding: 10px 20px;
-    }
-
-    /* Pantalla de Nombre */
-    #name-input-screen input[type="text"] {
-        font-size: 0.9em;
-        padding: 8px;
-    }
-    #name-input-screen button {
-        font-size: 1em;
-        padding: 10px 20px;
-    }
-
-    /* Sala de Espera / Combate Log */
-    #waiting-players-list li, #combat-log {
-        font-size: 0.9em;
-    }
-
-    /* Chat y Lista de Jugadores */
-    #messages {
-        height: 150px;
-        font-size: 0.9em;
-    }
-
-    #chat-form input, #chat-form button {
-        padding: 6px;
-        font-size: 0.9em;
+    #chat-and-online {
+        width: 300px;
+        margin-left: 20px;
+        display: flex;
+        flex-direction: column;
     }
 }
 
-@media (max-width: 480px) {
-    h1 {
-        font-size: 1.5em;
-    }
-
-    .game-section {
-        padding: 10px;
-    }
-
-    button {
-        font-size: 0.8em;
-        padding: 10px 15px;
-    }
-
-    #start-screen .mode-button {
-        font-size: 1em;
-        padding: 10px 20px;
-    }
-
-    .character-card {
-        width: 90%; /* Más ancho en pantallas muy pequeñas */
-        max-width: none;
-    }
-
-    #action-buttons button {
-        width: 100%;
-    }
-}
