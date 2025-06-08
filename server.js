@@ -18,8 +18,8 @@ let votes = {};
 let numberChoices = {};
 
 io.on('connection', socket => {
-  socket.on('join', name => {
-    players.push({ id: socket.id, name });
+socket.on('join', ({ name, character }) => {
+  players.push({ id: socket.id, name, character });
     io.emit('updatePlayers', players.map(p => p.name));
 
     if (players.length === 1) {
@@ -29,6 +29,14 @@ io.on('connection', socket => {
     if (players.length >= 2) {
       startChapter();
     }
+  });
+
+  socket.on('restartGame', () => {
+    chapterId = 1;          // Reinicia al capítulo 1
+    votes = {};             // Limpia votos previos
+    numberChoices = {};     // Limpia elecciones de dados (si usas)
+    io.emit('updatePlayers', players.map(p => p.name)); // Actualiza lista de jugadores conectados
+    startChapter();         // Inicia nuevamente la historia desde el principio
   });
 
 socket.on('vote', choice => {

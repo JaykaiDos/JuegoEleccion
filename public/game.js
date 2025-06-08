@@ -1,10 +1,22 @@
 const socket = io();
-let name;
+let name = '';
+let selectedCharacter = '';
+const restartBtn = document.getElementById('restartBtn');
 
+// Paso 1: Elegir personaje
+document.querySelectorAll(".charBtn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    selectedCharacter = btn.dataset.character;
+    document.getElementById("characterSelect").style.display = "none";
+    document.getElementById("login").style.display = "block";
+  });
+});
+
+// Paso 2: Enviar nombre y personaje
 document.getElementById("joinBtn").onclick = () => {
   name = document.getElementById("nameInput").value.trim();
-  if (name) {
-    socket.emit("join", name);
+  if (name && selectedCharacter) {
+    socket.emit("join", { name, character: selectedCharacter });
     document.getElementById("login").style.display = "none";
     document.getElementById("game").style.display = "block";
   }
@@ -87,9 +99,17 @@ socket.on("voteResult", data => {
 });
 
 
-socket.on("end", msg => {
-  document.getElementById("endMessage").textContent = msg;
+socket.on('end', msg => {
+  document.getElementById('endMessage').textContent = msg;
+  restartBtn.style.display = 'inline-block';
 });
+
+restartBtn.onclick = () => {
+  socket.emit('restartGame');
+  document.getElementById('endMessage').textContent = '';
+  restartBtn.style.display = 'none';
+  // Opcional: volver a mostrar opciones o mensaje de espera
+};
 
 // Chat
 document.getElementById("chatInput").addEventListener("keypress", e => {

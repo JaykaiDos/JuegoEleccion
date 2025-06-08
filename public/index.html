@@ -17,12 +17,23 @@
     </div>
 
     <div class="main">
-      <div id="login">
+      <!-- Nueva pantalla de selección de personaje -->
+      <div id="characterSelect">
+        <h2>Selecciona tu personaje</h2>
+        <button class="charBtn" data-character="deimos">Deimos (Rata gigante)</button>
+        <button class="charBtn" data-character="lezz" disabled>Lezz (Próximamente)</button>
+        <button class="charBtn" data-character="chris" disabled>Chris (Próximamente)</button>
+        <button class="charBtn" data-character="felore" disabled>Felore (Próximamente)</button>
+      </div>
+
+      <!-- Login después de elegir personaje -->
+      <div id="login" style="display:none;">
         <input type="text" id="nameInput" placeholder="Tu nombre" />
         <button id="joinBtn">Entrar</button>
         <p id="waitingMsg"></p>
       </div>
 
+      <!-- Juego principal -->
       <div id="game" style="display:none;">
         <div id="chapterText"></div>
         <div id="options"></div>
@@ -34,6 +45,7 @@
 
         <div id="result"></div>
         <div id="endMessage"></div>
+        <button id="restartBtn" style="display:none;">Reiniciar aventura</button>
       </div>
     </div>
   </div>
@@ -42,3 +54,4 @@
   <script src="game.js"></script>
 </body>
 </html>
+
