@@ -1,161 +1,316 @@
 /* public/style.css */
+
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #282c34; /* Fondo oscuro */
-    color: #abb2bf; /* Color de texto claro */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background-color: #1a1a1a; /* Fondo casi negro */
+    color: #f0f0f0; /* Texto casi blanco */
     margin: 0;
     padding: 20px;
-    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh; /* Asegura que ocupe al menos la altura de la ventana */
+    box-sizing: border-box; /* Incluye padding y border en el tamaño total */
 }
 
-#game-container {
-    background-color: #3a4049; /* Fondo del contenedor principal */
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 30px;
-    width: 100%;
-    max-width: 900px; /* Ancho máximo aumentado para mejor diseño */
+h1, h2 {
+    color: #ffffff; /* Títulos en blanco puro */
     text-align: center;
-}
-
-h1, h2, h3 {
-    color: #61afef; /* Azul claro para títulos */
     margin-bottom: 20px;
 }
 
-.screen {
-    display: none; /* Por defecto ocultos */
+/* Contenedores principales */
+#game-container,
+#chat-container,
+#player-list-container,
+#character-creation {
+    background-color: #333333; /* Fondo oscuro para los paneles */
+    border: 1px solid #666666; /* Borde gris oscuro */
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 20px;
+    width: 90%; /* Ancho responsivo */
+    max-width: 600px; /* Ancho máximo para legibilidad */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Sombra sutil */
 }
 
-.screen.active {
-    display: block; /* Muestra el screen activo */
-}
-
-/* Character Creation */
-#character-creation label {
-    display: block;
-    margin-top: 15px;
-    margin-bottom: 5px;
-    color: #c678dd; /* Púrpura para etiquetas */
-}
-
-#character-creation input,
-#character-creation select {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #5c6370; /* Borde gris oscuro */
-    border-radius: 4px;
-    background-color: #4b5260; /* Fondo de inputs/selects */
-    color: #abb2bf;
-    box-sizing: border-box; /* Incluir padding en el ancho */
-}
-
-#createCharacterBtn {
-    background-color: #98c379; /* Verde para el botón */
-    color: #282c34; /* Texto oscuro para el botón */
-    padding: 12px 25px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1.1em;
-    transition: background-color 0.3s ease;
-}
-
-#createCharacterBtn:hover {
-    background-color: #8bbd6d;
-}
-
-/* Game Screen */
-#game-screen {
-    display: flex;
-    flex-direction: row; /* Elementos en fila: lista de jugadores + historia */
-    gap: 20px;
-    text-align: left; /* Restablecer el texto a la izquierda */
-}
-
-#player-list-container {
-    flex: 1; /* Ocupa una parte del espacio */
-    background-color: #4b5260;
-    padding: 15px;
-    border-radius: 5px;
-    min-width: 180px; /* Ancho mínimo para la lista de jugadores */
-    max-width: 250px;
-}
-
-#connectedPlayers {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-#connectedPlayers li {
-    padding: 8px 0;
-    border-bottom: 1px dashed #5c6370;
-}
-
-#connectedPlayers li:last-child {
-    border-bottom: none;
-}
-
-#vote-counts {
-    margin-top: 20px;
-    padding-top: 10px;
-    border-top: 1px solid #5c6370;
-    font-size: 0.9em;
-    color: #e5c07b; /* Amarillo para conteo de votos */
-}
-#vote-counts div {
-    margin-bottom: 5px;
-}
-
-#story-display {
-    flex: 3; /* Ocupa más espacio */
-    background-color: #4b5260;
-    padding: 20px;
-    border-radius: 5px;
-}
-
-#currentStory {
+/* Estilos para el área de historia */
+#story-text {
     font-size: 1.2em;
     line-height: 1.6;
-    margin-bottom: 25px;
-    white-space: pre-wrap; /* Mantiene saltos de línea del texto */
+    margin-bottom: 20px;
+    text-align: center;
+    color: #e0e0e0; /* Texto de la historia un poco más claro */
 }
 
+/* Botones de elección */
 .choice-button {
+    background-color: #555555; /* Fondo de botón gris oscuro */
+    color: #ffffff; /* Texto de botón blanco */
+    border: 1px solid #888888;
+    padding: 12px 25px;
+    margin: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+    width: calc(100% - 20px); /* Ocupa casi todo el ancho del contenedor */
+    max-width: 400px; /* Ancho máximo para botones */
+}
+
+.choice-button:hover {
+    background-color: #777777; /* Efecto hover más claro */
+    transform: translateY(-2px); /* Pequeño levantamiento */
+}
+
+.choice-button:active {
+    background-color: #444444; /* Efecto click más oscuro */
+    transform: translateY(0);
+}
+
+.choice-button:disabled {
+    background-color: #3a3a3a; /* Botón deshabilitado */
+    color: #999999;
+    cursor: not-allowed;
+    border-color: #555555;
+}
+
+/* Resultados de votos */
+#vote-results {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px dashed #666666; /* Separador de resultados */
+    color: #c0c0c0;
+    text-align: center;
+    font-size: 0.95em;
+}
+
+#vote-results div {
+    margin-bottom: 5px;
+}
+
+/* Lista de jugadores */
+#player-list ul {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+}
+
+#player-list li {
+    background-color: #444444; /* Fondo para cada jugador */
+    color: #ffffff;
+    padding: 8px 15px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+/* Formulario de creación de personaje */
+#character-creation label {
     display: block;
-    width: 100%;
-    background-color: #61afef;
-    color: #282c34;
-    padding: 12px 15px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+#character-creation input[type="text"],
+#character-creation select {
+    width: calc(100% - 22px); /* Ancho del input/select */
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #777777;
+    border-radius: 4px;
+    background-color: #2a2a2a; /* Fondo de inputs oscuro */
+    color: #f0f0f0; /* Texto de inputs claro */
+    font-size: 1em;
+}
+
+#character-creation button {
+    background-color: #4CAF50; /* Un toque de color para el botón principal (verde), puedes cambiarlo a gris */
+    background-color: #666666; /* Usando gris para mantener el blanco y negro */
+    color: white;
+    padding: 12px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-size: 1em;
-    text-align: left;
-    transition: background-color 0.3s ease, transform 0.1s ease;
+    width: 100%;
+    transition: background-color 0.3s ease;
 }
 
-.choice-button:hover:not(:disabled) { /* No hover si está deshabilitado */
-    background-color: #52a2e4;
-    transform: translateY(-2px);
+#character-creation button:hover {
+    background-color: #888888;
 }
 
-.choice-button:disabled {
-    background-color: #5c6370; /* Gris para botones deshabilitados */
-    color: #abb2bf;
-    cursor: not-allowed;
-    opacity: 0.7;
+/* Estilos del Chat */
+#chat-container {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #222222; /* Fondo del chat un poco más oscuro */
+    border: 1px solid #444444;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    min-height: 150px; /* Altura mínima del chat */
+    max-height: 300px; /* Altura máxima del chat */
 }
 
-.message {
-    margin-top: 15px;
-    font-weight: bold;
-    color: #e5c07b; /* Amarillo para mensajes */
+#messages {
+    flex-grow: 1; /* Permite que ocupe el espacio disponible */
+    overflow-y: auto; /* Scroll si hay muchos mensajes */
+    padding: 10px;
+    background-color: #1a1a1a; /* Fondo de la ventana de mensajes */
+    border: 1px solid #444444;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    color: #d0d0d0; /* Color de texto de los mensajes */
+}
+
+#messages div {
+    margin-bottom: 5px;
+    word-wrap: break-word; /* Rompe palabras largas para que no desborden */
+}
+
+#chat-container input[type="text"] {
+    width: calc(100% - 70px); /* Ancho del input para dejar espacio al botón */
+    padding: 10px;
+    border: 1px solid #666666;
+    border-radius: 4px;
+    background-color: #2a2a2a;
+    color: #f0f0f0;
+    font-size: 0.95em;
+    box-sizing: border-box; /* Importante para el ancho */
+    float: left; /* Para que el input y botón estén en la misma línea */
+}
+
+#chat-container button {
+    width: 60px; /* Ancho del botón de enviar */
+    padding: 10px;
+    background-color: #555555;
+    color: white;
+    border: 1px solid #888888;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+    float: right; /* Para que el input y botón estén en la misma línea */
+    box-sizing: border-box;
+    transition: background-color 0.3s ease;
+}
+
+#chat-container button:hover {
+    background-color: #777777;
+}
+
+/* Limpiar flotadores */
+#chat-container::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Responsividad básica para pantallas pequeñas */
+@media (max-width: 768px) {
+    #game-container,
+    #chat-container,
+    #player-list-container,
+    #character-creation {
+        padding: 15px;
+    }
+
+    .choice-button {
+        font-size: 0.9em;
+        padding: 10px 15px;
+    }
+}
+/* public/style.css - AÑADIR ESTO AL FINAL DEL ARCHIVO */
+
+/* ========================================= */
+/* --- Estilos Responsivos para Móviles --- */
+/* ========================================= */
+
+@media (max-width: 768px) {
+    /* Estilos generales para pantallas de tablet y móviles */
+    body {
+        padding: 15px; /* Menos padding en los bordes */
+    }
+
+    h1, h2 {
+        font-size: 1.8em; /* Títulos un poco más pequeños */
+        margin-bottom: 15px;
+    }
+
+    #game-container,
+    #chat-container,
+    #player-list-container,
+    #character-creation {
+        padding: 15px; /* Reducir padding interno de los contenedores */
+        width: 95%; /* Ocupar más ancho en pantallas pequeñas */
+        max-width: none; /* Eliminar el límite de ancho máximo */
+        margin-bottom: 15px; /* Reducir margen entre secciones */
+    }
+
+    /* Estilos específicos del juego */
+    #story-text {
+        font-size: 1.1em; /* Texto de historia más pequeño */
+        line-height: 1.5;
+        margin-bottom: 15px;
+    }
+
+    .choice-button {
+        font-size: 0.95em; /* Botones de elección más pequeños */
+        padding: 10px 15px;
+        margin: 8px 0; /* Un poco menos de margen y más alineados verticalmente */
+        width: 100%; /* Asegurar que los botones ocupen todo el ancho disponible */
+    }
+
+    /* Estilos del chat */
+    #chat-container {
+        min-height: 120px; /* Altura mínima del chat un poco menor */
+        max-height: 250px; /* Altura máxima del chat un poco menor */
+    }
+
+    #chat-container input[type="text"] {
+        width: calc(100% - 60px); /* Ajustar ancho del input del chat */
+        font-size: 0.9em;
+    }
+
+    #chat-container button {
+        width: 50px; /* Ajustar ancho del botón de enviar del chat */
+        font-size: 0.9em;
+    }
+
+    #messages {
+        font-size: 0.9em; /* Mensajes de chat más pequeños */
+        padding: 8px;
+    }
+
+    /* Lista de jugadores */
+    #player-list li {
+        font-size: 0.85em; /* Texto de la lista de jugadores más pequeño */
+        padding: 6px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Estilos para teléfonos muy pequeños (ajustes adicionales) */
+    h1 {
+        font-size: 1.6em;
+    }
+    h2 {
+        font-size: 1.4em;
+    }
+    .choice-button {
+        font-size: 0.9em; /* Aún más pequeños si es necesario */
+        padding: 8px 12px;
+    }
+    #chat-container input[type="text"] {
+        font-size: 0.85em;
+    }
+    #chat-container button {
+        font-size: 0.85em;
+    }
 }
