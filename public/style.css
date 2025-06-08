@@ -1,0 +1,161 @@
+/* public/style.css */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #282c34; /* Fondo oscuro */
+    color: #abb2bf; /* Color de texto claro */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#game-container {
+    background-color: #3a4049; /* Fondo del contenedor principal */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 30px;
+    width: 100%;
+    max-width: 900px; /* Ancho máximo aumentado para mejor diseño */
+    text-align: center;
+}
+
+h1, h2, h3 {
+    color: #61afef; /* Azul claro para títulos */
+    margin-bottom: 20px;
+}
+
+.screen {
+    display: none; /* Por defecto ocultos */
+}
+
+.screen.active {
+    display: block; /* Muestra el screen activo */
+}
+
+/* Character Creation */
+#character-creation label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: #c678dd; /* Púrpura para etiquetas */
+}
+
+#character-creation input,
+#character-creation select {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #5c6370; /* Borde gris oscuro */
+    border-radius: 4px;
+    background-color: #4b5260; /* Fondo de inputs/selects */
+    color: #abb2bf;
+    box-sizing: border-box; /* Incluir padding en el ancho */
+}
+
+#createCharacterBtn {
+    background-color: #98c379; /* Verde para el botón */
+    color: #282c34; /* Texto oscuro para el botón */
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease;
+}
+
+#createCharacterBtn:hover {
+    background-color: #8bbd6d;
+}
+
+/* Game Screen */
+#game-screen {
+    display: flex;
+    flex-direction: row; /* Elementos en fila: lista de jugadores + historia */
+    gap: 20px;
+    text-align: left; /* Restablecer el texto a la izquierda */
+}
+
+#player-list-container {
+    flex: 1; /* Ocupa una parte del espacio */
+    background-color: #4b5260;
+    padding: 15px;
+    border-radius: 5px;
+    min-width: 180px; /* Ancho mínimo para la lista de jugadores */
+    max-width: 250px;
+}
+
+#connectedPlayers {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#connectedPlayers li {
+    padding: 8px 0;
+    border-bottom: 1px dashed #5c6370;
+}
+
+#connectedPlayers li:last-child {
+    border-bottom: none;
+}
+
+#vote-counts {
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #5c6370;
+    font-size: 0.9em;
+    color: #e5c07b; /* Amarillo para conteo de votos */
+}
+#vote-counts div {
+    margin-bottom: 5px;
+}
+
+#story-display {
+    flex: 3; /* Ocupa más espacio */
+    background-color: #4b5260;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+#currentStory {
+    font-size: 1.2em;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    white-space: pre-wrap; /* Mantiene saltos de línea del texto */
+}
+
+.choice-button {
+    display: block;
+    width: 100%;
+    background-color: #61afef;
+    color: #282c34;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    text-align: left;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.choice-button:hover:not(:disabled) { /* No hover si está deshabilitado */
+    background-color: #52a2e4;
+    transform: translateY(-2px);
+}
+
+.choice-button:disabled {
+    background-color: #5c6370; /* Gris para botones deshabilitados */
+    color: #abb2bf;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.message {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #e5c07b; /* Amarillo para mensajes */
+}
