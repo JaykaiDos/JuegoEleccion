@@ -1,69 +1,44 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Juego 1v1 Online</title>
-    <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aventura con Amigos</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- Pantalla ingreso nombre -->
-    <section id="name-input-screen" class="game-section">
-        <h2>Ingresa tu nombre</h2>
-        <input type="text" id="player-name-input" placeholder="Tu nombre" />
-        <button id="confirm-name-button">Confirmar</button>
-    </section>
+  <div class="container">
+    <div class="sidebar">
+      <h2>Jugadores conectados</h2>
+      <ul id="playerList"></ul>
+      <h2>Chat</h2>
+      <div id="chatBox"></div>
+      <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
+    </div>
 
-    <!-- Pantalla selección modo -->
-    <section id="start-screen" class="game-section hidden">
-        <h2>Selecciona modo de juego</h2>
-        <button id="mode-1v1" class="mode-button">1 vs 1</button>
-    </section>
+    <div class="main">
+      <div id="login">
+        <input type="text" id="nameInput" placeholder="Tu nombre" />
+        <button id="joinBtn">Entrar</button>
+        <p id="waitingMsg"></p>
+      </div>
 
-    <!-- Selección de personaje -->
-    <section id="character-selection-screen" class="game-section hidden">
-        <h2>Selecciona tu personaje</h2>
-        <div id="characters-container" class="characters-container"></div>
-        <button id="confirm-character-selection" disabled class="disabled-button">Confirmar selección</button>
-    </section>
-
-    <!-- Sala de espera -->
-    <section id="waiting-room-screen" class="game-section hidden">
-        <h2>Sala de espera - Modo <span id="waiting-room-mode"></span></h2>
-        <p>Esperando rival...</p>
-        <ul id="waiting-players-list"></ul>
-    </section>
-
-    <!-- Pantalla combate -->
-    <section id="combat-screen" class="game-section hidden">
-        <div class="combat-header">
-            <div>
-                <h3 id="my-character-name">Personaje</h3>
-                <p>Vida: <span id="my-character-hp">100/100</span></p>
-            </div>
-            <div id="action-buttons" class="action-buttons"></div>
+      <div id="game" style="display:none;">
+        <div id="chapterText"></div>
+        <div id="options"></div>
+        
+        <div id="dice" style="display:none;">
+          <p>¡Empate! Elige un número del 1 al 6:</p>
+          <div id="diceChoices"></div>
         </div>
-        <div id="combat-log" class="combat-log"></div>
-    </section>
 
-    <!-- Chat y jugadores online -->
-    <aside id="chat-and-online" class="hidden">
-        <div class="chat-container">
-            <ul id="messages" class="chat-messages"></ul>
-            <form id="chat-form" autocomplete="off">
-                <input id="m" autocomplete="off" placeholder="Escribe un mensaje..." />
-                <button>Enviar</button>
-            </form>
-        </div>
-        <div class="online-container">
-            <h4>Jugadores Online</h4>
-            <ul id="online-list" class="online-list"></ul>
-            <h4>Jugadores en Lobby</h4>
-            <ul id="player-list" class="player-list"></ul>
-        </div>
-    </aside>
+        <div id="result"></div>
+        <div id="endMessage"></div>
+      </div>
+    </div>
+  </div>
 
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="game.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>

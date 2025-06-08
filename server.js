@@ -1,213 +1,164 @@
 const express = require('express');
-const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 
+const chapters = require('./chapters');
+
 app.use(express.static(path.join(__dirname, 'public')));
-/**
- * Estructuras para manejar usuarios y salas
- */
-const players = new Map(); // socket.id -> {name, character, roomId}
-const rooms = new Map();   // roomId -> {players: [socketId, socketId], gameState}
 
-/**
- * Crear nueva sala 1v1 o asignar jugador a una existente
- */
-function findOrCreateRoom() {
-    for (const [roomId, room] of rooms.entries()) {
-        if (room.players.length === 1) {
-            return roomId;
-        }
+let players = [];
+let chapterId = 1;
+let votes = {};
+let numberChoices = {};
+
+io.on('connection', socket => {
+  socket.on('join', name => {
+    players.push({ id: socket.id, name });
+    io.emit('updatePlayers', players.map(p => p.name));
+
+    if (players.length === 1) {
+      socket.emit('waiting', 'Esperando a otro jugador...');
     }
-    const newRoomId = `room-${Math.floor(Math.random() * 10000)}`;
-    rooms.set(newRoomId, { players: [], gameState: null });
-    return newRoomId;
-}
 
-io.on('connection', (socket) => {
-    console.log('Usuario conectado:', socket.id);
+    if (players.length >= 2) {
+      startChapter();
+    }
+  });
 
-    // Evento: jugador se registra (nombre, personaje)
-    socket.on('player-join', ({ name, character }) => {
-        players.set(socket.id, { name, character, roomId: null });
+socket.on('vote', choice => {
+  votes[socket.id] = choice;
+  const player = players.find(p => p.id === socket.id);
+  const chapter = chapters[chapterId];
+  const selectedOption = chapter.options.find(opt => opt.id === choice);
 
-        // Asignar sala
-        let roomId = findOrCreateRoom();
-        const room = rooms.get(roomId);
-        if (room.players.length < 2) {
-            room.players.push(socket.id);
-            players.get(socket.id).roomId = roomId;
-            socket.join(roomId);
-
-            // Avisar a todos en la sala la lista actualizada
-            const roomPlayers = room.players.map(id => {
-                const p = players.get(id);
-                return { id, name: p.name, character: p.character };
-            });
-
-            io.to(roomId).emit('waiting-room-update', { players: roomPlayers });
-
-            // Si sala completa, iniciar partida
-            if (room.players.length === 2) {
-                startGame(roomId);
-            }
-        }
+  if (player && selectedOption) {
+    io.emit('playerVoted', {
+      name: player.name,
+      optionText: selectedOption.text
     });
+  }
 
-    // Evento: jugador envía acción (usar habilidad)
-    socket.on('player-action', ({ abilityId }) => {
-        const player = players.get(socket.id);
-        if (!player) return;
-        const roomId = player.roomId;
-        if (!roomId) return;
-        const room = rooms.get(roomId);
-        if (!room || !room.gameState) return;
-
-        handlePlayerAction(room, socket.id, abilityId);
-    });
-
-    // Evento: chat global (en la sala)
-    socket.on('chat-message', (msg) => {
-        const player = players.get(socket.id);
-        if (!player) return;
-        const roomId = player.roomId;
-        if (!roomId) return;
-        io.to(roomId).emit('chat-message', { name: player.name, message: msg });
-    });
-
-    // Desconexión
-    socket.on('disconnect', () => {
-        console.log('Usuario desconectado:', socket.id);
-        const player = players.get(socket.id);
-        if (!player) return;
-        const roomId = player.roomId;
-        if (roomId) {
-            const room = rooms.get(roomId);
-            if (room) {
-                room.players = room.players.filter(id => id !== socket.id);
-                // Avisar a los otros que el jugador se fue
-                io.to(roomId).emit('player-disconnected', { id: socket.id, name: player.name });
-                // Si no quedan jugadores, eliminar sala
-                if (room.players.length === 0) {
-                    rooms.delete(roomId);
-                }
-            }
-        }
-        players.delete(socket.id);
-    });
+  checkVotes();
 });
 
-/**
- * Inicia la partida con estados iniciales
- */
-function startGame(roomId) {
-    const room = rooms.get(roomId);
-    if (!room) return;
 
-    // Estado inicial de los jugadores (vida, habilidades, etc)
-    const p1 = players.get(room.players[0]);
-    const p2 = players.get(room.players[1]);
+  socket.on('numberChoice', num => {
+    numberChoices[socket.id] = num;
+    checkNumberChoices();
+  });
 
-    room.gameState = {
-        turnIndex: 0,
-        players: [
-            {
-                socketId: room.players[0],
-                name: p1.name,
-                character: p1.character,
-                hp: p1.character.initialHp,
-                maxHp: p1.character.initialHp,
-                abilities: p1.character.abilities,
-                alive: true,
-            },
-            {
-                socketId: room.players[1],
-                name: p2.name,
-                character: p2.character,
-                hp: p2.character.initialHp,
-                maxHp: p2.character.initialHp,
-                abilities: p2.character.abilities,
-                alive: true,
-            }
-        ],
-        log: [`¡La batalla comienza entre ${p1.name} y ${p2.name}!`]
-    };
+  socket.on('chatMessage', msg => {
+    const sender = players.find(p => p.id === socket.id);
+    if (sender) {
+      io.emit('chatMessage', { name: sender.name, msg });
+    }
+  });
 
-    // Avisar a los jugadores que comienza el combate con info
-    io.to(roomId).emit('game-start', {
-        players: room.gameState.players.map(p => ({
-            name: p.name,
-            character: p.character,
-            hp: p.hp,
-            maxHp: p.maxHp,
-            socketId: p.socketId,
-        })),
-        turnSocketId: room.gameState.players[room.gameState.turnIndex].socketId,
-        log: room.gameState.log,
-    });
+  socket.on('disconnect', () => {
+    players = players.filter(p => p.id !== socket.id);
+    io.emit('updatePlayers', players.map(p => p.name));
+    resetState();
+  });
+});
+
+function startChapter() {
+  votes = {};
+  numberChoices = {};
+  const chap = chapters[chapterId];
+  io.emit('chapter', chap);
 }
 
-/**
- * Manejar acción del jugador (usar habilidad)
- */
-function handlePlayerAction(room, playerId, abilityId) {
-    if (!room.gameState) return;
+function checkVotes() {
+  if (Object.keys(votes).length < players.length) return;
 
-    const gs = room.gameState;
-    const currentPlayer = gs.players[gs.turnIndex];
-    if (currentPlayer.socketId !== playerId) {
-        io.to(playerId).emit('error-message', 'No es tu turno');
-        return;
-    }
+  const tally = {};
+  players.forEach(p => {
+    const choice = votes[p.id];
+    tally[choice] = (tally[choice] || 0) + 1;
+  });
 
-    const opponentIndex = (gs.turnIndex + 1) % 2;
-    const opponent = gs.players[opponentIndex];
+  const entries = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+  const tie = entries.length > 1 && entries[0][1] === entries[1][1];
 
-    const ability = currentPlayer.abilities.find(a => a.id === abilityId);
-    if (!ability) {
-        io.to(playerId).emit('error-message', 'Habilidad inválida');
-        return;
-    }
-
-    // Lógica simple: habilidad hace daño igual a baseAttack + bonus
-    // Para simplificar, asumamos que el daño = baseAttack + (habilidad index * 5)
-    // Se puede expandir según habilidad
-
-    let damage = currentPlayer.character.baseAttack + 10; // base + 10 fijo
-
-    gs.log.push(`${currentPlayer.name} usa ${ability.name} y causa ${damage} de daño a ${opponent.name}`);
-
-    opponent.hp -= damage;
-    if (opponent.hp <= 0) {
-        opponent.hp = 0;
-        opponent.alive = false;
-        gs.log.push(`${opponent.name} ha sido derrotado!`);
-    }
-
-    // Cambiar turno si juego no terminó
-    if (opponent.alive) {
-        gs.turnIndex = opponentIndex;
-        gs.log.push(`Turno de ${gs.players[gs.turnIndex].name}`);
-    } else {
-        gs.log.push(`¡${currentPlayer.name} gana la partida!`);
-    }
-
-    // Enviar actualización a sala
-    io.to(room.players[0]).emit('game-update', {
-        players: gs.players.map(p => ({ name: p.name, hp: p.hp, maxHp: p.maxHp, alive: p.alive })),
-        turnSocketId: gs.players[gs.turnIndex]?.socketId || null,
-        log: gs.log,
+  if (!tie) {
+    const result = entries[0][0];
+    io.emit('voteResult', {
+      result,
+      reason: 'Mayoría',
+      votes: tally
     });
-    io.to(room.players[1]).emit('game-update', {
-        players: gs.players.map(p => ({ name: p.name, hp: p.hp, maxHp: p.maxHp, alive: p.alive })),
-        turnSocketId: gs.players[gs.turnIndex]?.socketId || null,
-        log: gs.log,
-    });
+    processChoice(result);
+  } else {
+    io.emit('startDice');
+  }
 }
 
-http.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+function checkNumberChoices() {
+  if (Object.keys(numberChoices).length < players.length) return;
+
+  const [p1, p2] = players.map(p => p.id);
+  const n1 = numberChoices[p1], n2 = numberChoices[p2];
+
+  let winnerId;
+  let diceRoll;
+
+  do {
+    diceRoll = Math.floor(Math.random() * 6) + 1;
+    if (diceRoll === n1) winnerId = p1;
+    if (diceRoll === n2) winnerId = p2;
+  } while (!winnerId);
+
+  const result = votes[winnerId];
+  const tally = {};
+  players.forEach(p => {
+    const choice = votes[p.id];
+    tally[choice] = (tally[choice] || 0) + 1;
+  });
+
+  io.emit('voteResult', {
+    result,
+    reason: 'Empate resuelto con dado',
+    votes: tally,
+    diceRoll,
+    numberChoices: {
+      [players[0].name]: n1,
+      [players[1].name]: n2
+    }
+  });
+
+  processChoice(result);
+}
+
+function processChoice(choiceId) {
+  const chap = chapters[chapterId];
+  const opt = chap.options.find(o => o.id === choiceId);
+  if (!opt) {
+    io.emit('end', "¡La aventura terminó!");
+    resetState();
+    return;
+  }
+  chapterId = opt.next;
+  const nextChap = chapters[chapterId];
+  if (!nextChap.options.length) {
+    io.emit('chapter', nextChap);
+    io.emit('end', "Fin de la aventura.");
+    resetState();
+  } else {
+    startChapter();
+  }
+}
+
+function resetState() {
+  votes = {};
+  numberChoices = {};
+}
+
+server.listen(PORT, () => {
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
